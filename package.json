@@ -1,0 +1,23 @@
+{
+  "name": "fight-night",
+  "version": "1.0.0",
+  "description": "Voting software for a theatre performance",
+  "main": "index.js",
+  "scripts": {
+    "serve": "http-server src/presentation",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaesur/fight-night.git"
+  },
+  "author": "Florian Van Belleghem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zaesur/fight-night/issues"
+  },
+  "homepage": "https://github.com/zaesur/fight-night#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
