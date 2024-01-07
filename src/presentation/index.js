@@ -1,4 +1,4 @@
-import configuration from "./config.json" assert { type: "json" };
+import configuration from "./config.json" assert { type: "json" }
 
 const createQuestionElement = ({ question, answers}) => {
     const questionElement = document.createElement("li")
