@@ -1,21 +1,12 @@
 export default class Client {
     constructor(baseUrl) {
-        try {
-            // Check if baseUrl is valid, throws TypeError
-            new URL(baseUrl)
-
-            this.baseUrl = baseUrl
-        } catch {
-            throw new TypeError(
-                "Client needs to be instantiated with a valid base url (ex. new Client('api.domain.com') )"
-            )
-        }
+        this.baseUrl = new URL(baseUrl)
     }
 
-    getUrl = path => `${this.baseUrl}/${path}`
+    getUrl = path => new URL(path, this.baseUrl)
 
     getState = () => fetch(
-        this.getUrl("state"),
+        this.getUrl("api/state"),
         {
             method: "GET",
             headers: {
@@ -26,7 +17,7 @@ export default class Client {
     )
 
     startHardware = (min, max) => fetch(
-        this.getUrl("hardware/start"),
+        this.getUrl("api/hardware/start"),
         {
             method: "POST",
             headers: {
@@ -41,7 +32,7 @@ export default class Client {
     )
 
     stopHardware = () => fetch(
-        this.getUrl("hardware/stop"),
+        this.getUrl("api/hardware/stop"),
         {
             method: "POST",
             headers: {
@@ -52,7 +43,7 @@ export default class Client {
     )
 
     startQuestion = (answersCount) => fetch(
-        this.getUrl("question/start"),
+        this.getUrl("api/question/start"),
         {
             method: "POST",
             headers: {
@@ -66,7 +57,7 @@ export default class Client {
     )
 
     stopQuestion = () => fetch(
-        this.getUrl("question/start"),
+        this.getUrl("api/question/start"),
         {
             method: "POST",
             headers: {
@@ -77,7 +68,7 @@ export default class Client {
     )
 
     getResults = () => fetch(
-        this.getUrl("question/results"),
+        this.getUrl("api/question/results"),
         {
             method: "GET",
             headers: {
