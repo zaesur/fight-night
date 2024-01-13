@@ -1,4 +1,6 @@
 export default class Client {
+    #baseUrl;
+
     /**
      * Creates an instance of Client to make requests to the voting API.
      * @param { string | URL } baseUrl The base URL of the API
@@ -6,16 +8,17 @@ export default class Client {
      * @memberof Client
      */
     constructor(baseUrl) {
-        this.baseUrl = new URL(baseUrl)
+        this.#baseUrl = new URL(baseUrl)
     }
 
     /**
      * Creates a complete URL given a relative path.
      * May be used to generate API routes.
      * @param { string | URL } path The relative path to the resource
+     * @private
      * @memberof Client
      */
-    getUrl = path => new URL(path, this.baseUrl)
+    #getUrl = path => new URL(path, this.#baseUrl)
 
     /**
      * Requests the current state of the voting system.
@@ -23,7 +26,7 @@ export default class Client {
      * @memberof Client
      */
     getState = () => fetch(
-        this.getUrl("api/state"),
+        this.#getUrl("api/state"),
         {
             method: "GET",
             headers: {
@@ -41,7 +44,7 @@ export default class Client {
      * @memberof Client
      */
     startHardware = (min, max) => fetch(
-        this.getUrl("api/hardware/start"),
+        this.#getUrl("api/hardware/start"),
         {
             method: "POST",
             headers: {
@@ -61,7 +64,7 @@ export default class Client {
      * @memberof Client
      */
     stopHardware = () => fetch(
-        this.getUrl("api/hardware/stop"),
+        this.#getUrl("api/hardware/stop"),
         {
             method: "POST",
             headers: {
@@ -79,7 +82,7 @@ export default class Client {
      * @memberof Client
      */
     startQuestion = (answersCount) => fetch(
-        this.getUrl("api/question/start"),
+        this.#getUrl("api/question/start"),
         {
             method: "POST",
             headers: {
@@ -98,7 +101,7 @@ export default class Client {
      * @memberof Client
      */
     stopQuestion = () => fetch(
-        this.getUrl("api/question/start"),
+        this.#getUrl("api/question/start"),
         {
             method: "POST",
             headers: {
@@ -115,7 +118,7 @@ export default class Client {
      * @memberof Client
      */
     getResults = () => fetch(
-        this.getUrl("api/question/results"),
+        this.#getUrl("api/question/results"),
         {
             method: "GET",
             headers: {
