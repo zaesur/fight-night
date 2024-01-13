@@ -1,4 +1,5 @@
-import configuration from "./config.json" assert { type: "json" }
+import configuration from "./data/config.json" assert { type: "json" }
+import Client from "./logic/http.js"
 
 const createQuestionElement = ({ question, answers}) => {
     const questionElement = document.createElement("li")
@@ -18,3 +19,8 @@ const renderQuestions = (id, questions) => {
 }
 
 renderQuestions("container", configuration.questions.slice(0, 4))
+
+new Client(configuration.apiUrl)
+    .getState()
+    .then(response => response.json())
+    .then(jsonObject => console.log(jsonObject))

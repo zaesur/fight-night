@@ -4,7 +4,7 @@
   "description": "Voting software for a theatre performance",
   "main": "index.js",
   "scripts": {
-    "serve": "http-server src/presentation"
+    "serve": "http-server src/admin"
   },
   "repository": {
     "type": "git",
