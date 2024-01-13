@@ -1,9 +1,12 @@
-import { App as renderApp } from "../ui/app.js"
 import Client from "./http.js"
 
 export class App {
     #client
     #root
+
+    // Private properties
+    #isRunning = false
+    #isPolling = false
 
     /**
      * Creates an instance of App.
@@ -15,12 +18,33 @@ export class App {
         this.#client = client
         this.#root = root 
 
-        this.#render()
+        this.#initialize()
+    }
+
+    #initialize = () => {
+        const handleResponse = async (response) => {
+            if (response.ok) {
+                const json = await response.json()
+
+                this.#isRunning = Boolean(json.result["hardware_state"])
+                this.#isPolling = Boolean(json.result["active_question"])
+            } else {
+                console.warn(`Something unexpected went wrong while initializing: ${response.status}`)
+            }
+
+            this.#render()
+        }
+
+        this.#client
+            .getState()
+            .then(handleResponse)
     }
 
     #render = () => {
-        const app = renderApp((number) => console.log(`The number is: ${number}`))
-        this.#root.replaceChildren(app)
+        this.#root.innerHTML = `
+            <p>${this.#isRunning ? "System running" : "System not running"}</p>
+            <p>${this.#isPolling ? "Question active" : "No question active"}</p>
+        `
     }
 }
 
