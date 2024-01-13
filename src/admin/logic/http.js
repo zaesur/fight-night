@@ -101,7 +101,7 @@ export default class Client {
      * @memberof Client
      */
     stopQuestion = () => fetch(
-        this.#getUrl("api/question/start"),
+        this.#getUrl("api/question/stop"),
         {
             method: "POST",
             headers: {
