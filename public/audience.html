@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button onclick="requestFullscreen()">Fullscreen</button>
+    <main id="results"></main>
+  </body>
+  <script>
+    const render = ({ isActive, isClosed, question, answers }) => {
+      if (isActive && isClosed) {
+        return `<p>The results are: ${results}</p>`;
+      } else if (isActive) {
+        return `
+      <p>${question}</p>
+      <p>${answers.join(" | ")}</p>
+    `;
+      } else {
+        return "";
+      }
+    };
+
+    const poll = async () => {
+      const response = await fetch("/status");
+      const body = document.getElementById("results");
+      if (response.ok) {
+        const json = await response.json();
+        body.innerHTML = render(json);
+      }
+    };
+
+    const requestFullscreen = () => {
+      document.requestFullscreen();
+    };
+
+    const onFullScreenChange = () => {
+      const button = document.querySelector("button");
+
+      // Hide the request full screen button
+      button.style.display = document.fullscreenElement ? "none" : "inline";
+
+      // Hide the cursor
+      document.documentElement.style.cursor = document.fullscreenElement
+        ? "none"
+        : "auto";
+    };
+
+    setInterval(poll, 1000);
+    poll();
+    document.addEventListener("fullscreenchange", onFullScreenChange);
+  </script>
+</html>

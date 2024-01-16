@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <a type="button" id="prev">Previous</a>
+    <a type="button" id="next">Next</a>
+    <main id="question"></main>
+  </body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get("id"));
+
+    const prev = document.getElementById("prev");
+    prev.setAttribute("href", id === 1 ? "" : `/question.html?id=${id - 1}`);
+
+    const next = document.getElementById("next");
+    next.setAttribute("href", id === 19 ? "" : `/question.html?id=${id + 1}`);
+
+    const run = async () => {
+      const response = await fetch("static/config.json");
+
+      if (response.ok) {
+        const json = await response.json();
+        const main = document.getElementById("question");
+        const { question, answers } = json.questions[id - 1];
+
+        main.innerHTML = `<h1>${question}</h1><p>${answers.join(" | ")}</p>`;
+      }
+    };
+
+    run();
+  </script>
+</html>
