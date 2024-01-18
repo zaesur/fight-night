@@ -1,5 +1,3 @@
-//this is a comment
-
 {
     "interval": 1000,
     "key": "FIGHT_NIGHT",
@@ -13,7 +11,7 @@
         {
             "id": 2,
             "question": "How do you identify?",
-            "answers": [ "Female", "Male", "X" ]
+            "answers": [ "Female", "Male", "Other" ]
         },
         {
             "id": 3,
