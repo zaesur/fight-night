@@ -1,0 +1,22 @@
+main {
+  width: 100vw;
+  height: 100vh;
+
+  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#results {
+  gap: 2rem;
+  display: flex;
+}
+
+#result {
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

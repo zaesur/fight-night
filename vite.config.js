@@ -8,7 +8,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        index: resolve(__dirname, "www/index.html"),
+        control: resolve(__dirname, "www/control.html"),
         audience: resolve(__dirname, "www/audience.html"),
       },
     },

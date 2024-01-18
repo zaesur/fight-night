@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="control.css" />
+    <title>Question</title>
+  </head>
+  <body>
+    <main style="display: flex; justify-content: center">
+      <form>
+        <input type="button" value="Open voting, show question" id="open" />
+        <input
+          type="button"
+          value="Close voting, show results"
+          id="show"
+          disabled="true"
+        />
+        <input type="button" value="Hide results" id="hide" disabled="true" />
+      </form>
+    </main>
+  </body>
+
+  <script type="module">
+    let interval;
+
+    const openButton = document.getElementById("open");
+    const showButton = document.getElementById("show");
+    const hideButton = document.getElementById("hide");
+
+    const { question, results } = {
+      question: "What colour are your socks?",
+      results: {
+        1: {
+          answer: "Red",
+          count: 3,
+          percentage: 15,
+        },
+        2: {
+          answer: "Green",
+          count: 7,
+          percentage: 35,
+        },
+        3: {
+          answer: "Blue",
+          count: 10,
+          percentage: 50,
+        },
+      },
+    };
+
+    openButton.addEventListener("click", () => {
+      openButton.disabled = true;
+      showButton.disabled = false;
+
+      interval = setInterval(() => {
+        console.log("Getting intermediate results");
+      }, 1000);
+
+      localStorage.removeItem("SHOW_QUESTION");
+      localStorage.setItem("SHOW_QUESTION", question);
+    });
+
+    showButton.addEventListener("click", () => {
+      showButton.disabled = true;
+      hideButton.disabled = false;
+
+      window.clearInterval(interval);
+
+      localStorage.removeItem("SHOW_RESULTS");
+      localStorage.setItem("SHOW_RESULTS", JSON.stringify(results));
+    });
+
+    hideButton.addEventListener("click", () => {
+      hideButton.disabled = true;
+      openButton.disabled = false;
+
+      localStorage.removeItem("SHOW_RESULTS");
+      localStorage.removeItem("SHOW_QUESTION");
+    });
+  </script>
+</html>

@@ -52,8 +52,6 @@ export default class App {
     if (response.ok) {
       const json = await response.json();
       const statistics = getStatistics(json.result);
-
-      console.log(statistics);
     }
   };
 
@@ -62,7 +60,7 @@ export default class App {
 
     if (response.ok) {
       const json = await response.json();
-      console.log(json);
+      const statistics = getStatistics(json.result);
     }
   };
 
@@ -81,6 +79,7 @@ export default class App {
       JSON.stringify({
         systemIsActive: this.systemIsActive,
         questionIsActive: this.questionIsActive,
+        showResults: this.showResults,
       })
     );
   };

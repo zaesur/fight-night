@@ -28,3 +28,9 @@ export const getStatistics = (votes: Array<Vote>): StatisticRecord => {
 
   return statistics;
 };
+
+export const calcRadius = (
+  radius: number,
+  reference: number,
+  value: number
+): number => Math.sqrt(value / reference) * radius;
