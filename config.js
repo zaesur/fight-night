@@ -1,3 +1,5 @@
+//Met nick checken: staan de ID's in beeld, of alleen de opties.
+
 export default {
     "interval": 1000,
     "key": "FIGHT_NIGHT",
@@ -25,18 +27,18 @@ export default {
         },
         {
             "id": 5,
-            "question": "",
-            "answers": [""]
+            "question": "Who do you like most?",
+            "answers": [1,2,3,4,5]
         },
         {
             "id": 6,
             "question": "",
-            "answers": []
+            "answers": ["Aurélie", "Eva", "Julia", "Jonas", "Prince"]
         },
         {
             "id": 7,
-            "question": "",
-            "answers": []
+            "question": "What quality do you value most?",
+            "answers": ["Freedom", "Charisma", "Wisdom", "Honesty", "Fun"]
         },
         {
             "id": 8,
@@ -45,53 +47,63 @@ export default {
         },
         {
             "id": 9,
-            "question": "",
-            "answers": []
+            "question": "A leader should ... me",
+            "answers": ["Empower", "Protect", "Respect", "Surprise", "Lead"]
         },
         {
             "id": 10,
             "question": "Are you racist, sexist or violent?",
             "answers": [ "Racist", "Sexist", "Violent", "None" ]
+            //In het script staat 'a little bit...', met nick checken wat op scherm.
         },
         {
             "id": 11,
-            "question": "",
+            "question": "Do you trust the majority of the audience?",
             "answers": [ "Yes", "No" ]
         },
         {
             "id": 12,
-            "question": "",
+            "question": "How fair is the system?",
             "answers": ["Totally unfair", "Little unfair", "Neutral", "Almost fair", "Totally fair"]
         },
         {
             "id": 13,
             "question": "Who is winning?",
-            "answers": []
+            "answers": ["Aurélie", "Eva", "Julia"]
         },
         {
             "id": 14,
-            "question": "",
-            "answers": []
+            "question": "Who is winning with host?",
+            "answers": ["Aurélie", "Eva", "Julia", "Angelo"]
         },
         {
             "id": 15,
-            "question": "",
-            "answers": []
+            "question": "Who is winning novote",
+            "answers": ["NAME AGREE", "NAME DISAGREE", undefined, undefined, "NAME NOVOTE"]
+            //agree is 1, disagree is 2, novote is 5
         },
         {
             "id": 16,
-            "question": "",
-            "answers": []
+            "question": "who is winning two choices?",
+            "answers": ["NAME AGREE", "NAME DISAGREE"]
         },
         {
             "id": 17,
-            "question": "",
-            "answers": []
+            "question": "Last voting question?",
+            "answers": ["NAME AGREE"]
         },
         {
             "id": 18,
-            "question": "",
-            "answers": ["Leave", "Stay"]
+            "question": "Do you want the others to leave or stay?",
+            "answers": ["Leave", "Stay", undefined]
+            //Here we need to know the ID's of the voting devices that were neither collected, nor voted 1, nor voted 2. So all devices in audience that refused to vote.
+            //In script it should say that actors backstage press 3 on all collected devices
         }
+
+        //We need 2 more displays on the screen:
+        
+        //Display ID's of all uncollected devices not voting in Q18
+        //and
+        //Display majority sentence
     ]
 }
