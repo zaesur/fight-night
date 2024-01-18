@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Question</title>
+  </head>
+  <body>
+    <main style="display: flex; justify-content: center">
+      <form
+        style="display: flex; flex-direction: column; align-items: flex-start"
+      >
+        <input type="button" value="Open voting" id="open" />
+        <input type="button" value="Show results" id="show" disabled />
+      </form>
+    </main>
+  </body>
+
+  <script type="module">
+    import App from "../src/app.ts";
+
+    const app = new App(render);
+
+    const openButton = document.getElementById("open");
+    const showButton = document.getElementById("show");
+
+    let interval;
+
+    openButton.addEventListener("click", () => {
+      openButton.disabled = true;
+      showButton.disabled = false;
+
+      interval = setInterval(() => {
+        app.getResults();
+      }, 1000);
+    });
+
+    showButton.addEventListener("click", () => {
+      openButton.disabled = false;
+      showButton.disabled = true;
+
+      window.clearInterval(interval);
+    });
+
+    function render() {
+      // 'this' is bound to the app
+      const app = this;
+
+      console.log(app.count);
+    }
+
+    window.app = app;
+  </script>
+</html>
