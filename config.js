@@ -1,4 +1,4 @@
-{
+export default {
     "interval": 1000,
     "key": "FIGHT_NIGHT",
     "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
