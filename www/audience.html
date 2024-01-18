@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" style="cursor: zoom-in">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="audience.css" />
+    <title>Audience</title>
+  </head>
+  <body>
+    <main id="main" style="visibility: hidden">
+      <h1 id="question"></h1>
+      <section id="results" style="visibility: hidden">
+        <template id="result-template">
+          <div id="result">
+            <svg width="100" height="100">
+              <circle cx="50" cy="50" r="25"></circle>
+            </svg>
+            <p>Label</p>
+          </div>
+        </template>
+      </section>
+    </main>
+  </body>
+  <script type="module">
+    import { calcRadius } from "../src/utils.ts";
+
+    const mainNode = document.getElementById("main");
+    const questionNode = document.getElementById("question");
+    const resultsNode = document.getElementById("results");
+    const resultTemplate = document
+      .getElementById("result-template")
+      .content.querySelector("div");
+
+    const renderResult = ({ answer, percentage }) => {
+      const reference = (1 / 3) * 100;
+
+      // Copy the result template and grab the svg and label.
+      const resultNode = document.importNode(resultTemplate, true);
+      const circle = resultNode.querySelector("circle");
+      const p = resultNode.querySelector("p");
+
+      // Inject the result values
+      circle.setAttribute("r", calcRadius(25, reference, percentage));
+      p.textContent = `${answer}: ${percentage}%`;
+
+      return resultNode;
+    };
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === "SHOW_QUESTION") {
+        const text = document.createTextNode(event.newValue);
+        questionNode.replaceChildren(text);
+        mainNode.style.visibility = event.newValue ? "visible" : "hidden";
+      }
+
+      if (event.key === "SHOW_RESULTS") {
+        if (event.newValue) {
+          const results = JSON.parse(event.newValue);
+
+          resultsNode.replaceChildren(
+            ...Object.values(results).map(renderResult)
+          );
+        }
+
+        resultsNode.style.visibility = event.newValue ? "visible" : "hidden";
+      }
+    });
+
+    document.addEventListener("click", () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      document.documentElement.style.cursor = document.fullscreenElement
+        ? "none"
+        : "zoom-in";
+    });
+  </script>
+</html>

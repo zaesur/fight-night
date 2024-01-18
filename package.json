@@ -4,7 +4,9 @@
   "description": "Voting software for a theatre performance",
   "main": "index.js",
   "scripts": {
-    "serve": "node server.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -17,13 +19,7 @@
   },
   "homepage": "https://github.com/zaesur/fight-night#readme",
   "devDependencies": {
-    "prettier": "^3.2.2"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "engineStrict": true,
-  "engines": {
-    "node": ">=18.16.0"
+    "prettier": "^3.2.4",
+    "vite": "^5.0.11"
   }
 }
