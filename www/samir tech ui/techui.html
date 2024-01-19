@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            text-align: center;
+        }
+
+        div {
+            border: 1px solid black;
+        }
+
+        input {
+            font-size: larger;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100%;
+        }
+
+        .column {
+            flex: auto;
+        }
+
+        .button {
+            font-size: large;
+        }
+
+        #leftColumn {
+            flex: 2;
+            background-color: blue;
+        }
+
+        #rightColumn {
+            background-color: yellow;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #blackWhiteButtons {
+            flex: 0 1 auto;
+            display: flex;
+            min-height: 15%;
+        }
+
+        .blackWhite {
+            flex: auto;
+        }
+
+        #incResults {
+            background-color: grey;
+            flex: 1 1 auto;
+            margin: 5%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .votes {
+            margin: 0 10% 10%;
+
+        }
+
+        label {
+            padding: 10px;
+            font-size: x-large;
+        }
+
+        #currentQ {
+            font-size: xx-large;
+            font-weight: 900;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+         <div class="column" id="leftColumn">
+
+        </div>
+        <div class="column" id="rightColumn">
+            <div id="blackWhiteButtons">
+                <button class="button blackWhite">White</button>
+                <button class="button blackWhite">Black</button>
+            </div>
+            <p class="p question" id="currentQ">What's your gender?</p>
+            <div id="incResults">
+                <label for="votes1">Male</label>
+                <input id="votes1" class="votes" placeholder="Incomming votes amount">
+                <label for="votes2">Female</label>
+                <input id="votes2" class="votes" placeholder="Incomming votes amount">
+                <label for="votes3">Other</label>
+                <input id="votes3" class="votes" placeholder="Incomming votes amount">
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
