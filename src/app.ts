@@ -1,5 +1,5 @@
 import Client from "./client.ts";
-import { apiUrl, key } from "../config.json";
+import { apiUrl, key } from "../config.js";
 import { getStatistics } from "./utils.ts";
 
 export default class App {
