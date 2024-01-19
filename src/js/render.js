@@ -1,4 +1,4 @@
-import { calcRadius } from "../src/utils.js";
+import { calcRadius } from "./utils.js";
 
 export const createOptionNode = (template, answer) => {
   const clone = document.importNode(template, true);
