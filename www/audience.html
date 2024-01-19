@@ -14,7 +14,15 @@
         <template id="result-template">
           <div id="result">
             <svg width="100" height="100">
-              <circle cx="50" cy="50" r="25"></circle>
+              <circle cx="50" cy="50" r="25">
+                <animate
+                  attributeName="r"
+                  dur="1s"
+                  values="0;25"
+                  calcMode="spline"
+                  keySplines="0 0.5 0.5 1"
+                />
+              </circle>
             </svg>
             <p>Label</p>
           </div>
@@ -38,10 +46,13 @@
       // Copy the result template and grab the svg and label.
       const resultNode = document.importNode(resultTemplate, true);
       const circle = resultNode.querySelector("circle");
+      const animate = resultNode.querySelector("animate")
       const p = resultNode.querySelector("p");
 
       // Inject the result values
-      circle.setAttribute("r", calcRadius(25, reference, percentage));
+      const radius = calcRadius(25, reference, percentage);
+      circle.setAttribute("r", radius);
+      animate.setAttribute("values", `0;${radius}`)
       p.textContent = `${answer}: ${percentage}%`;
 
       return resultNode;
