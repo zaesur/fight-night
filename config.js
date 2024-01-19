@@ -1,6 +1,6 @@
 //Met nick checken: staan de ID's in beeld, of alleen de opties.
 
-export default {
+export default Object.freeze({
     "interval": 1000,
     "key": "FIGHT_NIGHT",
     "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
@@ -106,4 +106,4 @@ export default {
         //and
         //Display majority sentence
     ]
-}
+})

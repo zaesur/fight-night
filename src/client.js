@@ -1,11 +1,11 @@
 export default class Client {
-  #baseUrl: URL;
+  #baseUrl;
 
-  constructor(baseUrl: string | URL) {
+  constructor(baseUrl) {
     this.#baseUrl = new URL(baseUrl);
   }
 
-  getURL = (path: string | URL) => new URL(path, this.#baseUrl);
+  getURL = (path) => new URL(path, this.#baseUrl);
 
   getState = () =>
     fetch(this.getURL("api/state"), {
@@ -16,7 +16,7 @@ export default class Client {
       },
     });
 
-  startHardware = (keyPadMin: number, keyPadMax: number) =>
+  startHardware = (keyPadMin, keyPadMax) =>
     fetch(this.getURL("api/hardware/start"), {
       method: "POST",
       headers: {
@@ -38,7 +38,7 @@ export default class Client {
       },
     });
 
-  startQuestion = (items: number) =>
+  startQuestion = (items) =>
     fetch(this.getURL("api/question/start"), {
       method: "POST",
       headers: {
