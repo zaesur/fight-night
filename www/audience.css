@@ -7,16 +7,22 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  visibility: hidden;
 }
 
-#results {
+section.results {
   gap: 2rem;
   display: flex;
 }
 
-#result {
+figure.result {
   gap: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+figure svg {
+  visibility: hidden;
 }

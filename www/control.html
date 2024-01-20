@@ -23,8 +23,9 @@
   </body>
 
   <script type="module">
-    let interval;
+    import constants from "../src/constants.js";
 
+    let interval;
     const openButton = document.getElementById("open");
     const showButton = document.getElementById("show");
     const hideButton = document.getElementById("hide");
@@ -50,6 +51,7 @@
       },
     };
 
+    // Open Voting
     openButton.addEventListener("click", () => {
       openButton.disabled = true;
       showButton.disabled = false;
@@ -58,26 +60,28 @@
         console.log("Getting intermediate results");
       }, 1000);
 
-      localStorage.removeItem("SHOW_QUESTION");
-      localStorage.setItem("SHOW_QUESTION", question);
+      localStorage.removeItem(constants.OPTIONS);
+      localStorage.setItem(constants.OPTIONS, JSON.stringify(results));
     });
 
+    // Close voting
     showButton.addEventListener("click", () => {
       showButton.disabled = true;
       hideButton.disabled = false;
 
       window.clearInterval(interval);
 
-      localStorage.removeItem("SHOW_RESULTS");
-      localStorage.setItem("SHOW_RESULTS", JSON.stringify(results));
+      localStorage.removeItem(constants.RESULTS);
+      localStorage.setItem(constants.RESULTS, JSON.stringify(results));
     });
 
+    // Hide results
     hideButton.addEventListener("click", () => {
       hideButton.disabled = true;
       openButton.disabled = false;
 
-      localStorage.removeItem("SHOW_RESULTS");
-      localStorage.removeItem("SHOW_QUESTION");
+      localStorage.removeItem(constants.RESULTS);
+      localStorage.removeItem(constants.OPTIONS);
     });
   </script>
 </html>
