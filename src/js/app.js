@@ -1,4 +1,4 @@
-import Client from "./client.ts";
+import Client from "./client.js";
 import { apiUrl, key } from "../config.js";
 import { getStatistics } from "./utils.js";
 
