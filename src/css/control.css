@@ -1,9 +1,48 @@
-form {
+main {
+  background-color: yellow;
+  padding: 4rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+#questions {
+  background-color: red;
+  width: 70%;
+}
+
+#results {
+  background-color: blue;
+  width: 30%;
+}
+
+.question {
+  display: flex;
+  flex-direction: column;
+}
+
+.question_body {
+  display: flex;
+  justify-content: space-around;
+}
+
+.options {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#results form {
   gap: 1rem;
   display: flex;
   flex-direction: column;
 }
 
 input[type="button"] {
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
 }

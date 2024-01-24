@@ -10,23 +10,24 @@
   <body>
     <main>
       <section class="results" />
-      <template>
-        <figure class="result">
-          <svg width="100" height="100">
-            <circle cx="50" cy="50" r="25">
-              <animate
-                attributeName="r"
-                dur="1s"
-                values="0;25"
-                calcMode="spline"
-                keySplines="0 0.5 0.5 1"
-              />
-            </circle>
-          </svg>
-          <label>Label</label>
-        </figure>
-      </template>
     </main>
+
+    <template>
+      <figure class="result">
+        <svg width="100" height="100">
+          <circle cx="50" cy="50" r="25">
+            <animate
+              attributeName="r"
+              dur="1s"
+              values="0;25"
+              calcMode="spline"
+              keySplines="0 0.5 0.5 1"
+            />
+          </circle>
+        </svg>
+        <label>Label</label>
+      </figure>
+    </template>
   </body>
   <script type="module">
     import constants from "./js/constants.js";

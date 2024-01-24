@@ -8,22 +8,72 @@
     <title>Question</title>
   </head>
   <body>
-    <main style="display: flex; justify-content: center">
-      <form>
-        <input type="button" value="Open voting, show question" id="open" />
-        <input
-          type="button"
-          value="Close voting, show results"
-          id="show"
-          disabled="true"
-        />
-        <input type="button" value="Hide results" id="hide" disabled="true" />
-      </form>
+    <main>
+      <section id="questions"></section>
+
+      <section id="results">
+        <form>
+          <input type="button" value="Open voting, show question" id="open" />
+          <input
+            type="button"
+            value="Close voting, show results"
+            id="show"
+            disabled="true"
+          />
+          <input type="button" value="Hide results" id="hide" disabled="true" />
+        </form>
+      </section>
     </main>
+
+    <template>
+      <article class="question">
+        <label>Question</label>
+        <section class="question_body">
+          <div class="options">
+            <input type="text" placeholder="option 1" hidden />
+            <input type="text" placeholder="option 2" hidden />
+            <input type="text" placeholder="option 3" hidden />
+            <input type="text" placeholder="option 4" hidden />
+            <input type="text" placeholder="option 5" hidden />
+          </div>
+
+          <div class="controls">
+            <input type="button" disabled value="Open vote" />
+            <input type="button" disabled value="Close vote" />
+            <input type="button" disabled value="Show results" />
+          </div>
+        </section>
+      </article>
+    </template>
   </body>
 
   <script type="module">
     import constants from "./js/constants.js";
+    import config from "./config.js";
+
+    const questionsNode = document.getElementById("questions");
+    const template = document.querySelector("template").content;
+
+    const createQuestionNode = (template, index, { question, answers }) => {
+      const clone = document.importNode(template, true);
+      const label = clone.querySelector("label");
+      const options = clone.querySelector(".options");
+
+      for (const [index, answer] of answers.entries()) {
+        const node = options.children[index];
+        node.hidden = false;
+        node.value = answer;
+      }
+
+      label.textContent = `${index + 1}: ${question}`;
+
+      return clone;
+    };
+
+    for (const [index, question] of config.questions.entries()) {
+      const node = createQuestionNode(template, index, question);
+      questionsNode.appendChild(node);
+    }
 
     let interval;
     const openButton = document.getElementById("open");
