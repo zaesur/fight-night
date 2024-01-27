@@ -9,129 +9,45 @@
   </head>
   <body>
     <main>
-      <section id="questions"></section>
-
-      <section id="results">
+      <section id="results" class="cards-container">
         <form>
-          <input type="button" value="Open voting, show question" id="open" />
-          <input
-            type="button"
-            value="Close voting, show results"
-            id="show"
-            disabled="true"
-          />
-          <input type="button" value="Hide results" id="hide" disabled="true" />
+          <label for="count">Number of voters:</label>
+          <input name="count" type="number" placeholder="0" min="0" />
+          <button>Start hardware</button>
         </form>
+
+        <div>
+          <button id="white">White background</button>
+          <button id="black">Black background</button>
+        </div>
+
+        <div>
+          <p>The results will be here</p>
+        </div>
       </section>
+      <section id="questions" class="cards-container"></section>
     </main>
 
     <template>
       <article class="question">
-        <label>Question</label>
-        <section class="question_body">
-          <div class="options">
-            <input type="text" placeholder="option 1" hidden />
-            <input type="text" placeholder="option 2" hidden />
-            <input type="text" placeholder="option 3" hidden />
-            <input type="text" placeholder="option 4" hidden />
-            <input type="text" placeholder="option 5" hidden />
-          </div>
+        <label class="question-label"></label>
+        <section class="question-body">
+          <form class="options">
+            <input name="1" type="text" placeholder="option 1" hidden />
+            <input name="2" type="text" placeholder="option 2" hidden />
+            <input name="3" type="text" placeholder="option 3" hidden />
+            <input name="4" type="text" placeholder="option 4" hidden />
+            <input name="5" type="text" placeholder="option 5" hidden />
+          </form>
 
-          <div class="controls">
-            <input type="button" disabled value="Open vote" />
-            <input type="button" disabled value="Close vote" />
-            <input type="button" disabled value="Show results" />
-          </div>
+          <form class="controls">
+            <button>Start voting</button>
+            <button disabled>End voting</button>
+            <button disabled>Publish</button>
+          </form>
         </section>
       </article>
     </template>
   </body>
-
-  <script type="module">
-    import constants from "./js/constants.js";
-    import config from "./config.js";
-
-    const questionsNode = document.getElementById("questions");
-    const template = document.querySelector("template").content;
-
-    const createQuestionNode = (template, index, { question, answers }) => {
-      const clone = document.importNode(template, true);
-      const label = clone.querySelector("label");
-      const options = clone.querySelector(".options");
-
-      for (const [index, answer] of answers.entries()) {
-        const node = options.children[index];
-        node.hidden = false;
-        node.value = answer;
-      }
-
-      label.textContent = `${index + 1}: ${question}`;
-
-      return clone;
-    };
-
-    for (const [index, question] of config.questions.entries()) {
-      const node = createQuestionNode(template, index, question);
-      questionsNode.appendChild(node);
-    }
-
-    let interval;
-    const openButton = document.getElementById("open");
-    const showButton = document.getElementById("show");
-    const hideButton = document.getElementById("hide");
-
-    const { question, results } = {
-      question: "What colour are your socks?",
-      results: {
-        1: {
-          answer: "Red",
-          count: 3,
-          percentage: 15,
-        },
-        2: {
-          answer: "Green",
-          count: 7,
-          percentage: 35,
-        },
-        3: {
-          answer: "Blue",
-          count: 10,
-          percentage: 50,
-        },
-      },
-    };
-
-    // Open Voting
-    openButton.addEventListener("click", () => {
-      openButton.disabled = true;
-      showButton.disabled = false;
-
-      interval = setInterval(() => {
-        console.log("Getting intermediate results");
-      }, 1000);
-
-      localStorage.removeItem(constants.OPTIONS);
-      localStorage.setItem(constants.OPTIONS, JSON.stringify(results));
-    });
-
-    // Close voting
-    showButton.addEventListener("click", () => {
-      showButton.disabled = true;
-      hideButton.disabled = false;
-
-      window.clearInterval(interval);
-
-      localStorage.removeItem(constants.RESULTS);
-      localStorage.setItem(constants.RESULTS, JSON.stringify(results));
-    });
-
-    // Hide results
-    hideButton.addEventListener("click", () => {
-      hideButton.disabled = true;
-      openButton.disabled = false;
-
-      localStorage.removeItem(constants.RESULTS);
-      localStorage.removeItem(constants.OPTIONS);
-    });
-  </script>
+  <script defer type="module" src="js/control.js"></script>
 </html>

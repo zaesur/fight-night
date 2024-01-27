@@ -18,3 +18,7 @@ main {
 .result svg {
   display: none;
 }
+
+label {
+  user-select: none;
+}

@@ -1,11 +1,11 @@
 /**
  * Represents the data of a single object.
- * @typedef {{ name: str, votes: int }} Option
+ * @typedef {{ answer: str, votes?: int }} Option
  */
 
 /**
  * Represents the state of the audience UI.
- * @typedef {{ isVisible: bool, backgroundColor: "black" | "white", options?: Option[] }} AudienceState
+ * @typedef {{ isVisible: bool, backgroundColor: "black" | "white", options: Option[] }} AudienceState
  */
 
 /**
@@ -13,27 +13,24 @@
  * @param { str } raw String data.
  * @return { AudienceState } The state of the audience UI.
  */
-const deserialize = (raw) => JSON.parse(raw);
+const deserialize = (raw) =>
+  raw
+    ? JSON.parse(raw)
+    : { isVisible: false, backgroundColor: "white", options: [] };
 
 /**
- * Deterministically enders the UI based on state.
+ * Deterministically renders the UI based on state.
  * @param { AudienceState } state The current state.
  * @return { void }
  */
-const renderAudience = (
-  { isVisible, backgroundColor, options } = {
-    isVisible: false,
-    backgroundColor: "white",
-    options: undefined,
-  }
-) => {
+const renderAudience = ({ isVisible, backgroundColor, options }) => {
   const bodyElement = document.querySelector("body");
   const templateElement = document.querySelector("template");
   const resultsElement = document.getElementById("results");
 
   // Applies to all states.
-  bodyElement.style.backgroundColor = state.backgroundColor;
-  bodyElement.style.visibility = state.isVisible ? "visible" : "hidden";
+  bodyElement.style.backgroundColor = backgroundColor;
+  bodyElement.style.visibility = isVisible ? "visible" : "hidden";
 
   // Render options.
   const nodes = options.map(({ answer, votes }) => {
@@ -46,6 +43,7 @@ const renderAudience = (
   resultsElement.replaceChildren(...nodes);
 };
 
+// Since renderAudience is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {
   if (event.newValue && event.key === "audience_state") {
     const state = deserialize(event.newValue);
@@ -53,6 +51,7 @@ window.addEventListener("storage", (event) => {
   }
 });
 
+// Fullscreen needs to be triggered by a user event.
 document.addEventListener("click", () => {
   if (document.fullscreenElement) {
     document.exitFullscreen();
@@ -61,6 +60,7 @@ document.addEventListener("click", () => {
   }
 });
 
+// Hide the mouse in fullscreen, else show a magnifying glass.
 document.addEventListener("fullscreenchange", () => {
   document.documentElement.style.cursor = document.fullscreenElement
     ? "none"

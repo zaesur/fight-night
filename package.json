@@ -4,7 +4,7 @@
   "description": "Voting software for the performance of 'Fight Night'",
   "main": "index.js",
   "scripts": {
-    "serve": "http-server src"
+    "serve": "http-server src -p 8000"
   },
   "repository": {
     "type": "git",

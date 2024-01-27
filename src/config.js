@@ -1,6 +1,13 @@
 //Met nick checken: staan de ID's in beeld, of alleen de opties.
 
+/**
+ * @exports
+ * @typedef {{ id: number, question: str, answers: str[] }} Question
+ * @typedef {{ apiUrl: str, questions: Question[] }} Config
+ * @type { Config }
+ */
 export default Object.freeze({
+  // Could be window.location in production, if served from the same server.
   "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
   "questions": [
     {

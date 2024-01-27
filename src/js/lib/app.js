@@ -1,5 +1,5 @@
 import Client from "./client.js";
-import { apiUrl, key } from "../config.js";
+import { apiUrl, key } from "../../config.js";
 import { getStatistics } from "./utils.js";
 
 export default class App {
@@ -62,29 +62,5 @@ export default class App {
       const json = await response.json();
       const statistics = getStatistics(json.result);
     }
-  };
-
-  loadLocalStorage = () => {
-    const state = localStorage.getItem(key);
-
-    if (state) {
-      this.systemIsActive = JSON.parse(state).systemIsActive;
-      this.questionIsActive = JSON.parse(state).questionIsActive;
-    }
-  };
-
-  saveLocalStorage = () => {
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        systemIsActive: this.systemIsActive,
-        questionIsActive: this.questionIsActive,
-        showResults: this.showResults,
-      })
-    );
-  };
-
-  resetLocalStorage = () => {
-    localStorage.removeItem(key);
   };
 }

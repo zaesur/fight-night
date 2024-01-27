@@ -1,18 +1,34 @@
 main {
-  background-color: yellow;
-  padding: 4rem;
+  height: 100vh;
+  padding: 2rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 #questions {
-  background-color: red;
-  width: 70%;
+  overflow-y: scroll;
 }
 
 #results {
-  background-color: blue;
-  width: 30%;
+  height: 100%;
+}
+
+#results :last-child {
+  flex-grow: 1;
+}
+
+.cards-container {
+  padding: 1rem;
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.cards-container > * {
+  flex-grow: 0;
+  padding: 1rem;
+  border: 1px solid;
+  border-radius: 5px;
 }
 
 .question {
@@ -20,9 +36,9 @@ main {
   flex-direction: column;
 }
 
-.question_body {
+.question-body {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 }
 
 .options {
@@ -32,17 +48,12 @@ main {
 }
 
 .controls {
+  gap: 0.5rem;
   display: flex;
   justify-content: center;
   flex-direction: column;
 }
 
-#results form {
-  gap: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-
-input[type="button"] {
+button {
   padding: 0.5rem 1rem;
 }
