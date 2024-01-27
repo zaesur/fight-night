@@ -9,7 +9,7 @@
   </head>
   <body>
     <main>
-      <section class="results" />
+      <section id="results" />
     </main>
 
     <template>
@@ -29,61 +29,5 @@
       </figure>
     </template>
   </body>
-  <script type="module">
-    import constants from "./js/constants.js";
-    import { createOptionNode, createResultNode } from "./js/render.js";
-
-    const mainNode = document.querySelector("main");
-    const resultsNode = document.querySelector(".results");
-    const template = document.querySelector("template").content;
-
-    window.addEventListener("storage", (event) => {
-      if (event.key === constants.OPTIONS) {
-        if (event.newValue) {
-          const results = JSON.parse(event.newValue);
-          const values = Object.values(results);
-
-          resultsNode.replaceChildren(
-            ...values.map(({ answer }) => createOptionNode(template, answer))
-          );
-        }
-
-        mainNode.style.visibility = event.newValue ? "visible" : "hidden";
-      }
-
-      if (event.key === constants.RESULTS) {
-        if (event.newValue) {
-          const results = JSON.parse(event.newValue);
-          const values = Object.values(results);
-
-          resultsNode.replaceChildren(
-            ...values.map(({ answer, percentage }) =>
-              createResultNode(
-                template,
-                (1 / values.length) * 100,
-                answer,
-                percentage
-              )
-            )
-          );
-        }
-
-        // resultsNode.style.visibility = event.newValue ? "inherit" : "hidden";
-      }
-    });
-
-    document.addEventListener("click", () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        document.documentElement.requestFullscreen();
-      }
-    });
-
-    document.addEventListener("fullscreenchange", () => {
-      document.documentElement.style.cursor = document.fullscreenElement
-        ? "none"
-        : "zoom-in";
-    });
-  </script>
+  <script defer type="module" src="js/audience.js"></script>
 </html>

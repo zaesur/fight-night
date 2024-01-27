@@ -1,0 +1,23 @@
+{
+  "name": "fight-night",
+  "version": "1.0.0",
+  "description": "Voting software for the performance of 'Fight Night'",
+  "main": "index.js",
+  "scripts": {
+    "serve": "http-server src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaesur/fight-night.git"
+  },
+  "author": "Florian Van Belleghem, Samir Veen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zaesur/fight-night/issues"
+  },
+  "homepage": "https://github.com/zaesur/fight-night#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "prettier": "^3.2.4"
+  }
+}
