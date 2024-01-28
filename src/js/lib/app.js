@@ -1,66 +1,92 @@
-import Client from "./client.js";
-import { apiUrl, key } from "../../config.js";
-import { getStatistics } from "./utils.js";
+import { mergeResults } from "./utils.js";
+
+/**
+ * @typedef {import("./serialize.js").Option} Option
+ * @typedef {import("./serialize.js").Result} Result
+ * @typedef {import("./client.js").Client} Client
+ * @typedef {import("./client.js").QuestionResponse["result"][0]} HardwareResult
+ */
 
 export default class App {
   #client;
-  id;
-  count;
-  render;
+  #storage;
 
   systemIsActive = false;
   questionIsActive = false;
 
-  constructor(render) {
-    this.#client = new Client(apiUrl);
+  isVisible = false;
+  backgroundColor = "white";
+  options = [];
+  results = [];
 
-    this.id = 1;
-    this.count = 10;
-    this.render = render.bind(this);
-
-    this.initialize();
+  /**
+   * Creates an instance of App.
+   * @param { Client } client
+   * @param { Storage } storage
+   * @memberof App
+   */
+  constructor(client, storage) {
+    this.#client = client;
+    this.#storage = storage;
   }
 
-  initialize = async () => {
-    await this.getState();
-
-    if (!this.systemIsActive) {
-      await this.#client.startHardware(0, this.count);
-    }
-
-    this.render();
+  setBackgroundColor = (color) => {
+    this.backgroundColor = color;
+    this.isVisible = false;
+    this.#syncAudience();
   };
 
-  getState = async () => {
-    const response = await this.#client.getState();
-
-    if (response.ok) {
-      const json = await response.json();
-
-      this.systemIsActive = Boolean(json.result["hardware_state"]);
-      this.questionIsActive = Boolean(json.result["active_question"]);
-    }
+  startHardware = async (number) => {
+    await this.#client.startHardware(0, number);
   };
 
-  startQuestion = async (count) => {
-    const response = await this.#client.startQuestion(count);
+  stopHardware = async () => {
+    await this.#client.stopHardware();
   };
 
   getResults = async () => {
     const response = await this.#client.getResults();
-
-    if (response.ok) {
-      const json = await response.json();
-      const statistics = getStatistics(json.result);
-    }
+    return mergeResults(response.result, this.options);
   };
 
-  showResults = async () => {
-    const response = await this.#client.stopQuestion();
+  startQuestion = async (options) => {
+    const max = options.reduce(
+      (max, { optionId }) => Math.max(max, optionId),
+      0
+    );
+    await this.#client.startQuestion(max);
 
-    if (response.ok) {
-      const json = await response.json();
-      const statistics = getStatistics(json.result);
-    }
+    // This will not be reached if the above throws,
+    // so it won't end up at the audience.
+    this.options = options;
+    this.isVisible = true;
+    this.#syncAudience();
+  };
+
+  stopQuestion = async () => {
+    const response = await this.#client.stopQuestion();
+    return mergeResults(response.result, this.options);
+  };
+
+  // TODO: allow input to override.
+  publishQuestion = async () => {
+    await this.stopQuestion();
+
+    // This will not be reached if the above throws,
+    // so it won't end up at the audience.
+    this.isVisible = true;
+    this.#syncAudience();
+  };
+
+  #syncAudience = () => {
+    this.#storage.setItem(
+      "audience_state",
+      JSON.stringify({
+        isVisible: this.isVisible,
+        backgroundColor: this.backgroundColor,
+        options: this.options,
+        results: this.results,
+      })
+    );
   };
 }

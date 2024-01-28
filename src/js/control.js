@@ -1,26 +1,114 @@
 import config from "../config.js";
+import App from "./lib/app.js";
+import Client, { ClientError } from "./lib/client.js";
 
-const whiteButton = document.getElementById("white");
-const blackButton = document.getElementById("black");
+const client = new Client(config.apiUrl);
+const app = new App(client, window.localStorage);
 
-whiteButton.addEventListener("click", () => {
-  window.localStorage.setItem(
-    "audience_state",
-    JSON.stringify({
-      isVisible: false,
-      backgroundColor: "white",
+const DO_NOTHING = undefined;
+const errorElement = document.getElementById("error");
+const resultsElement = document.getElementById("results");
+const startHardwareButton = document.getElementById("start-hardware");
+const stopHardwareButton = document.getElementById("stop-hardware");
+const getResultsButton = document.getElementById("get-results");
+const stopQuestionButton = document.getElementById("stop-question");
+const publishQuestionButton = document.getElementById("publish-question");
+const whiteButton = document.getElementById("set-white");
+const blackButton = document.getElementById("set-black");
+const countInput = document.getElementById("voter-count");
+
+const handlePromise = (promise, onSuccess, onFail, onFinished) => {
+  promise
+    .then((...args) => {
+      errorElement.textContent = "";
+      onSuccess?.(...args);
     })
+    .catch((error) => {
+      if (error instanceof ClientError) {
+        const message = `${error.message}: ${error.reason}`;
+        errorElement.textContent = message;
+        console.warn(message);
+      } else {
+        throw error;
+      }
+
+      onFail?.();
+    })
+    .finally(() => {
+      onFinished?.();
+    });
+};
+
+// On start hardware input.
+startHardwareButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.target.disabled = true;
+
+  const count = countInput.value;
+  handlePromise(app.startHardware(count), DO_NOTHING, DO_NOTHING, () => {
+    event.target.disabled = false;
+    countInput.focus();
+  });
+});
+
+// On stop hardware input.
+stopHardwareButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.target.disabled = true;
+
+  handlePromise(app.stopHardware(), DO_NOTHING, DO_NOTHING, () => {
+    event.target.disabled = false;
+  });
+});
+
+// On get results input.
+getResultsButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.target.disabled = true;
+
+  handlePromise(
+    app.getResults().then((results) => {
+      for (const { optionId, optionName, votes } of results) {
+        const input = document.querySelector(`input[name="${optionId}"]`);
+        input.value = votes;
+      }
+    }),
+    DO_NOTHING,
+    DO_NOTHING,
+    () => {
+      event.target.disabled = false;
+    }
   );
 });
 
-blackButton.addEventListener("click", () => {
-  window.localStorage.setItem(
-    "audience_state",
-    JSON.stringify({
-      isVisible: false,
-      backgroundColor: "black",
-    })
-  );
+// On stop question input.
+stopQuestionButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.target.disabled = true;
+
+  handlePromise(app.stopQuestion(), DO_NOTHING, DO_NOTHING, () => {
+    event.target.disabled = false;
+  });
+});
+
+// On publish question input.
+publishQuestionButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.target.disabled = true;
+
+  handlePromise(app.publishQuestion(), DO_NOTHING, DO_NOTHING, () => {
+    event.target.disabled = false;
+  });
+});
+
+whiteButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  app.setBackgroundColor("white");
+});
+
+blackButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  app.setBackgroundColor("black");
 });
 
 const renderControl = () => {
@@ -29,56 +117,33 @@ const renderControl = () => {
 
   const nodes = config.questions.map(({ id, question, answers }) => {
     const clone = document.importNode(templateElement, true);
-    const labelElement = clone.querySelector("label");
-    const optionsElement = clone.querySelector(".options");
-    const controlsElement = clone.querySelector(".controls");
+    const form = clone.querySelector("form");
+    const legend = clone.querySelector("legend");
+    const inputs = clone.querySelectorAll("input");
+    const button = clone.querySelector("button");
 
-    // Save the id for the controls and render question name.
-    controlsElement.dataset.id = id;
-    optionsElement.setAttribute("name", id);
-    labelElement.textContent = `${id}: ${question}`;
-
-    // Show the prefilled questions.
+    legend.textContent = `${id}: ${question}`;
     for (const [i, answer] of answers.entries()) {
-      const option = optionsElement.children[i];
-      option.hidden = false;
-      option.value = answer;
+      const input = inputs[i];
+      if (answer) {
+        input.value = answer;
+      }
     }
 
-    // Get the controls
-    const [startButton, endButton, publishButton] = controlsElement.children;
-
-    startButton.addEventListener("click", (event) => {
-      console.log("started voting");
-      const formData = new FormData(optionsElement);
-      const options = [...formData.values()]
-        .filter(Boolean)
-        .map((answer) => ({ answer }));
-      window.localStorage.setItem(
-        "audience_state",
-        JSON.stringify({
-          isVisible: true,
-          backgroundColor: "white",
-          options,
-        })
-      );
-      endButton.disabled = false;
-      publishButton.disabled = false;
-      event.target.disabled = true;
-    });
-
-    endButton.addEventListener("click", (event) => {
+    button.addEventListener("click", (event) => {
       event.preventDefault();
-      console.log("ended voting");
-      publishButton.enabled = false;
       event.target.disabled = true;
-    });
 
-    publishButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      console.log("publishing results");
-      endButton.disabled = true;
-      event.target.disabled = true;
+      const formData = new FormData(form);
+      const options = Array.from(formData.entries())
+        .map(([optionId, optionName]) =>
+          optionName ? { optionId: parseInt(optionId), optionName } : false
+        )
+        .filter(Boolean);
+
+      handlePromise(app.startQuestion(options), DO_NOTHING, DO_NOTHING, () => {
+        event.target.disabled = false;
+      });
     });
 
     return clone;

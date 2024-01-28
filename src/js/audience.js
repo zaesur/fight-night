@@ -1,22 +1,8 @@
-/**
- * Represents the data of a single object.
- * @typedef {{ answer: str, votes?: int }} Option
- */
+import { deserialize } from "./lib/serialize.js";
 
 /**
- * Represents the state of the audience UI.
- * @typedef {{ isVisible: bool, backgroundColor: "black" | "white", options: Option[] }} AudienceState
+ * @typedef {import("./lib/serialize.js").AudienceState} AudienceState
  */
-
-/**
- * A wrapper function to aid with intellisense.
- * @param { str } raw String data.
- * @return { AudienceState } The state of the audience UI.
- */
-const deserialize = (raw) =>
-  raw
-    ? JSON.parse(raw)
-    : { isVisible: false, backgroundColor: "white", options: [] };
 
 /**
  * Deterministically renders the UI based on state.
@@ -33,10 +19,11 @@ const renderAudience = ({ isVisible, backgroundColor, options }) => {
   bodyElement.style.visibility = isVisible ? "visible" : "hidden";
 
   // Render options.
-  const nodes = options.map(({ answer, votes }) => {
+  const nodes = options.map(({ optionId, optionName }) => {
     const clone = document.importNode(templateElement.content, true);
     const label = clone.querySelector("label");
-    label.textContent = votes ? `${answer}: ${votes}` : answer;
+    label.textContent = `${optionId}: ${optionName}`;
+
     return clone;
   });
 

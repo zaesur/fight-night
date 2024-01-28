@@ -5,48 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/control.css" />
-    <title>Question</title>
+    <link rel="shortcut icon" href="#" />
+    <title>Fight Night (Control)</title>
   </head>
   <body>
     <main>
-      <section id="results" class="cards-container">
+      <section class="column left-column">
         <form>
-          <label for="count">Number of voters:</label>
-          <input name="count" type="number" placeholder="0" min="0" />
-          <button>Start hardware</button>
+          <fieldset>
+            <legend>Errors</legend>
+            <p id="error"></p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Hardware</legend>
+            <label for="count">Number of voters:</label>
+            <input
+              id="voter-count"
+              name="count"
+              type="number"
+              placeholder="0"
+              min="0"
+            />
+            <button id="start-hardware">Start hardware</button>
+            <button id="stop-hardware">Stop hardware</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Audience</legend>
+            <button id="set-white">White background</button>
+            <button id="set-black">Black background</button>
+          </fieldset>
         </form>
 
-        <div>
-          <button id="white">White background</button>
-          <button id="black">Black background</button>
-        </div>
+        <form>
+          <fieldset id="results">
+            <legend>Results</legend>
+            <div>
+              <label for="1">1:</label>
+              <input name="1" type="number" />
+              <button disabled>Publish</button>
+            </div>
 
-        <div>
-          <p>The results will be here</p>
-        </div>
+            <div>
+              <label for="2">2:</label>
+              <input name="2" type="number" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="3">3:</label>
+              <input name="3" type="number" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="4">4:</label>
+              <input name="4" type="number" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="5">5:</label>
+              <input name="5" type="number" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <button id="get-results">Get results</button>
+              <button id="stop-question">Close voting</button>
+              <button id="publish-question">Publish results</button>
+            </div>
+          </fieldset>
+        </form>
       </section>
-      <section id="questions" class="cards-container"></section>
+      <section id="questions" class="column right-column"></section>
     </main>
 
     <template>
-      <article class="question">
-        <label class="question-label"></label>
-        <section class="question-body">
-          <form class="options">
-            <input name="1" type="text" placeholder="option 1" hidden />
-            <input name="2" type="text" placeholder="option 2" hidden />
-            <input name="3" type="text" placeholder="option 3" hidden />
-            <input name="4" type="text" placeholder="option 4" hidden />
-            <input name="5" type="text" placeholder="option 5" hidden />
-          </form>
-
-          <form class="controls">
-            <button>Start voting</button>
-            <button disabled>End voting</button>
-            <button disabled>Publish</button>
-          </form>
-        </section>
-      </article>
+      <form>
+        <fieldset class="options">
+          <legend class="label">Question</legend>
+          <input name="1" type="text" placeholder="disabled" />
+          <input name="2" type="text" placeholder="disabled" />
+          <input name="3" type="text" placeholder="disabled" />
+          <input name="4" type="text" placeholder="disabled" />
+          <input name="5" type="text" placeholder="disabled" />
+          <button>Start voting</button>
+        </fieldset>
+      </form>
     </template>
   </body>
   <script defer type="module" src="js/control.js"></script>

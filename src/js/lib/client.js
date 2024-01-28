@@ -1,3 +1,24 @@
+/**
+ * @typedef {Client} Client
+ * @typedef {ClientError} ClientError
+ * @typedef {{result: "ok"}} OkResponse
+ * @typedef {{result: { keypadId: number, options: number[]}[]}} QuestionResponse
+ * @typedef {{result: { keypadIds: number[], active_question: boolean, hardware_state: boolean }}} StateResponse
+ */
+
+export class ClientError extends Error {
+  /**
+   * Creates an instance of ClientError.
+   * @param { str } message
+   * @param { str } reason
+   * @memberof ClientError
+   */
+  constructor(message, reason) {
+    super(message);
+    this.reason = reason;
+  }
+}
+
 export default class Client {
   #baseUrl;
 
@@ -16,102 +37,139 @@ export default class Client {
    * May be used to generate API routes.
    * @param { string | URL } path The relative path to the resource
    * @private
+   * @returns { URL }
    * @memberof Client
    */
   #getUrl = (path) => new URL(path, this.#baseUrl);
 
+  #withClientError =
+    (message, fetchCallback) =>
+    async (...fetchCallbackArgs) => {
+      try {
+        const response = await fetchCallback(...fetchCallbackArgs);
+
+        if (response.ok) {
+          return response.json();
+        } else {
+          const isJsonResponse = response.headers
+            .get("Content-Type")
+            .includes("application/json");
+
+          if (isJsonResponse) {
+            const json = await response.json();
+            throw new ClientError(
+              message,
+              json["error"] ?? json["message"] ?? "unknown reason"
+            );
+          } else {
+            throw new ClientError(message, await response.text());
+          }
+        }
+      } catch (error) {
+        throw error;
+      }
+    };
+
   /**
    * Requests the current state of the voting system.
-   * @returns { Promise<Response> } A response object
+   * @returns { Promise<StateResponse> } A response object
+   * @throws { ClientError }
    * @memberof Client
    */
-  getState = () =>
+  getState = this.#withClientError("Failed to get the state.", () =>
     fetch(this.#getUrl("api/state"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Accept: "*/*",
+        "Accept": "*/*",
       },
-    });
+    })
+  );
 
   /**
    * Requests to start the voting system.
-   * @param { number } min Starting id of voting hardware
-   * @param { number } max Ending id of the voting hardware
-   * @returns { Promise<Response> } A response object
+   * @param { number } keyPadMin Starting id of voting hardware
+   * @param { number } keyPadMax Ending id of the voting hardware
+   * @returns { Promise<OkResponse> } A response object
+   * @throws { ClientError }
    * @memberof Client
    */
-  startHardware = (min, max) =>
-    fetch(this.#getUrl("api/hardware/start"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        keyPadMin: min,
-        keyPadMax: max,
-      }),
-    });
+  startHardware = this.#withClientError(
+    "Failed to start the hardware",
+    (keyPadMin, keyPadMax) =>
+      fetch(this.#getUrl("api/hardware/start"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ keyPadMin, keyPadMax }),
+      })
+  );
 
   /**
    * Requests to stop the voting system.
-   * @returns { Promise<Response> } A response object
+   * @returns { Promise<Promise<OkResponse>> } A response object
+   * @throws { ClientError }
    * @memberof Client
    */
-  stopHardware = () =>
+  stopHardware = this.#withClientError("Failed to stop the hardware", () =>
     fetch(this.#getUrl("api/hardware/stop"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+        "Accept": "application/json",
       },
-    });
+    })
+  );
 
   /**
    * Requests the voting sytem to start of a new question.
-   * @param { number } answersCount The number of available answers
-   * @returns { Promise<Response> } A response object
+   * @param { number } items The number of available answers
+   * @returns { Promise<Promise<OkResponse>> } A response object
    * @memberof Client
    */
-  startQuestion = (answersCount) =>
-    fetch(this.#getUrl("api/question/start"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        items: answersCount,
-      }),
-    });
+  startQuestion = this.#withClientError(
+    "Failed to start the question",
+    (items) =>
+      fetch(this.#getUrl("api/question/start"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ items }),
+      })
+  );
 
   /**
    * Requests the voting system to close the question.
-   * @returns { Promise<Response> } A response object
+   * @returns { Promise<QuestionResponse> } A response object
    * @memberof Client
    */
-  stopQuestion = () =>
+  stopQuestion = this.#withClientError("Failed to stop the question", () =>
     fetch(this.#getUrl("api/question/stop"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+        "Accept": "application/json",
       },
-    });
+    })
+  );
 
   /**
    * Requests the current results from the voting system,
    * without closing the question.
-   * @returns { Promise<Response> } A response object
+   * @returns { Promise<QuestionResponse> } A response object
    * @memberof Client
    */
-  getResults = () =>
+  getResults = this.#withClientError("Failed to get the results", () =>
     fetch(this.#getUrl("api/question/results"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
+        "Accept": "application/json",
       },
-    });
-};
+    })
+  );
+}
