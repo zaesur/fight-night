@@ -49,7 +49,8 @@ export default class App {
 
   startQuestion = async (questionId, options) => {
     // Find the *highest* optionId to request that number of votes.
-    const max = options.reduce(
+    const filtered = options.filter(({ optionName }) => Boolean(optionName));
+    const max = filtered.reduce(
       (max, { optionId }) => Math.max(max, optionId),
       0
     );
@@ -58,7 +59,8 @@ export default class App {
     // This will not be reached if the above throws,
     // so it won't end up at the audience.
     this.questionId = questionId;
-    this.options = options;
+    this.options = filtered;
+    this.results = [];
     this.isVisible = true;
     this.#syncAudience();
   };
@@ -75,8 +77,6 @@ export default class App {
     for (const { optionId, votes } of results) {
       const match = this.results.find((result) => result.optionId === optionId);
       if (match) {
-        // Override the 'real' results with the votes coming from the UI.
-        // We still have the keypadIds in case we want to know the true votes.
         match.votes = votes;
       }
     }

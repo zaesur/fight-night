@@ -1,8 +1,15 @@
 main {
+  background-color: #303841;
+  color: #eeeeee;
   height: 100vh;
   padding: 2rem;
   display: flex;
   justify-content: center;
+}
+
+legend {
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .column {
@@ -46,4 +53,8 @@ main {
 #results {
   display: flex;
   flex-direction: column;
+}
+
+.results-buttons {
+  margin-top: 1rem;
 }

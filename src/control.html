@@ -13,11 +13,6 @@
       <section class="column left-column">
         <form>
           <fieldset>
-            <legend>Errors</legend>
-            <p id="error"></p>
-          </fieldset>
-
-          <fieldset>
             <legend>Hardware</legend>
             <label for="count">Number of voters:</label>
             <input
@@ -71,11 +66,16 @@
               <button disabled>Publish</button>
             </div>
 
-            <div>
+            <div class="results-buttons">
               <button id="get-results">Get results</button>
               <button id="stop-question">Close voting</button>
               <button id="publish-question">Publish results</button>
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Errors</legend>
+            <p id="error"></p>
           </fieldset>
         </form>
       </section>

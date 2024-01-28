@@ -9,7 +9,7 @@ import { deserialize } from "./lib/serialize.js";
  * @param { AudienceState } state The current state.
  * @return { void }
  */
-const renderAudience = ({ isVisible, backgroundColor, options }) => {
+const renderAudience = ({ isVisible, backgroundColor, options, results }) => {
   const bodyElement = document.querySelector("body");
   const templateElement = document.querySelector("template");
   const resultsElement = document.getElementById("results");
@@ -19,10 +19,15 @@ const renderAudience = ({ isVisible, backgroundColor, options }) => {
   bodyElement.style.visibility = isVisible ? "visible" : "hidden";
 
   // Render options.
-  const nodes = options.map(({ optionId, optionName }) => {
+  const nodes = options.map(({ optionId, optionName }, index) => {
     const clone = document.importNode(templateElement.content, true);
     const label = clone.querySelector("label");
     label.textContent = `${optionId}: ${optionName}`;
+
+    const result = results.find((result) => result.optionId === optionId);
+    if (result) {
+      label.textContent = label.textContent + "\n" + result.votes;
+    }
 
     return clone;
   });
