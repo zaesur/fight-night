@@ -1,6 +1,6 @@
 /**
  * @typedef {{ optionId: number, optionName: str }} Option
- * @typedef {{ optionId: number, keypadIds: number[], votes: number, percentage: float }} Result
+ * @typedef {{ optionId: number, keypadIds: number[], votes: number }} Result
  * @typedef {{ isVisible: bool, backgroundColor: "black" | "white", options: Option[] }} AudienceState
  */
 

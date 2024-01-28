@@ -27,7 +27,6 @@ const handlePromise = (promise, onSuccess, onFail, onFinished) => {
       if (error instanceof ClientError) {
         const message = `${error.message}: ${error.reason}`;
         errorElement.textContent = message;
-        console.warn(message);
       } else {
         throw error;
       }
@@ -68,8 +67,8 @@ getResultsButton.addEventListener("click", (event) => {
 
   handlePromise(
     app.getResults().then((results) => {
-      for (const { optionId, optionName, votes } of results) {
-        const input = document.querySelector(`input[name="${optionId}"]`);
+      for (const { optionId, votes } of results) {
+        const input = resultsElement.querySelector(`input[name="${optionId}"]`);
         input.value = votes;
       }
     }),
@@ -96,7 +95,12 @@ publishQuestionButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(app.publishQuestion(), DO_NOTHING, DO_NOTHING, () => {
+  const formData = new FormData(resultsElement);
+  const results = Array.from(formData.entries()).map(([optionId, votes]) => {
+    return { optionId: parseInt(optionId), votes: parseInt(votes) };
+  });
+
+  handlePromise(app.publishQuestion(results), DO_NOTHING, DO_NOTHING, () => {
     event.target.disabled = false;
   });
 });
@@ -135,15 +139,21 @@ const renderControl = () => {
       event.target.disabled = true;
 
       const formData = new FormData(form);
-      const options = Array.from(formData.entries())
-        .map(([optionId, optionName]) =>
-          optionName ? { optionId: parseInt(optionId), optionName } : false
-        )
-        .filter(Boolean);
+      const options = Array.from(formData.entries()).map(
+        ([optionId, optionName]) => ({
+          optionId: parseInt(optionId),
+          optionName,
+        })
+      );
 
-      handlePromise(app.startQuestion(options), DO_NOTHING, DO_NOTHING, () => {
-        event.target.disabled = false;
-      });
+      handlePromise(
+        app.startQuestion(id, options),
+        DO_NOTHING,
+        DO_NOTHING,
+        () => {
+          event.target.disabled = false;
+        }
+      );
     });
 
     return clone;

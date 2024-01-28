@@ -26,18 +26,11 @@ export const mergeResults = (hardwareResults) => {
 
   // Second, calculate the share of the total vote count
   const results = Object.entries(bucketsByOptionId).map(
-    ([optionId, keypadIds]) => {
-      const votes = keypadIds.length;
-      const percentage = (keypadIds.length / hardwareResults.length) * 100;
-      // ^This will always be the total number of votes! Filter?
-
-      return {
-        optionId,
-        keypadIds,
-        votes,
-        percentage,
-      };
-    }
+    ([optionId, keypadIds]) => ({
+      optionId,
+      keypadIds,
+      votes: keypadIds.length,
+    })
   );
 
   return results;

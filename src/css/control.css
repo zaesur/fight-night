@@ -11,14 +11,12 @@ main {
 }
 
 .left-column {
+  flex-grow: 3;
   height: 100%;
 }
 
-.left-column :last-child {
-  flex-grow: 1;
-}
-
 .right-column {
+  flex-grow: 1;
   overflow-y: scroll;
 }
 
@@ -39,6 +37,10 @@ main {
 
 .options :last-child {
   margin-top: 1rem;
+}
+
+#error {
+  height: 4rem;
 }
 
 #results {

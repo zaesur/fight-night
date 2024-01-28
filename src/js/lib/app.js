@@ -11,9 +11,7 @@ export default class App {
   #client;
   #storage;
 
-  systemIsActive = false;
-  questionIsActive = false;
-
+  questionId = 0;
   isVisible = false;
   backgroundColor = "white";
   options = [];
@@ -46,10 +44,11 @@ export default class App {
 
   getResults = async () => {
     const response = await this.#client.getResults();
-    return mergeResults(response.result, this.options);
+    return mergeResults(response.result);
   };
 
-  startQuestion = async (options) => {
+  startQuestion = async (questionId, options) => {
+    // Find the *highest* optionId to request that number of votes.
     const max = options.reduce(
       (max, { optionId }) => Math.max(max, optionId),
       0
@@ -58,6 +57,7 @@ export default class App {
 
     // This will not be reached if the above throws,
     // so it won't end up at the audience.
+    this.questionId = questionId;
     this.options = options;
     this.isVisible = true;
     this.#syncAudience();
@@ -65,17 +65,30 @@ export default class App {
 
   stopQuestion = async () => {
     const response = await this.#client.stopQuestion();
-    return mergeResults(response.result, this.options);
+    this.results = mergeResults(response.result);
+    this.#syncDatabase();
   };
 
-  // TODO: allow input to override.
-  publishQuestion = async () => {
-    await this.stopQuestion();
-
-    // This will not be reached if the above throws,
-    // so it won't end up at the audience.
+  publishQuestion = async (results) => {
     this.isVisible = true;
+
+    for (const { optionId, votes } of results) {
+      const match = this.results.find((result) => result.optionId === optionId);
+      if (match) {
+        // Override the 'real' results with the votes coming from the UI.
+        // We still have the keypadIds in case we want to know the true votes.
+        match.votes = votes;
+      }
+    }
+
     this.#syncAudience();
+  };
+
+  #syncDatabase = () => {
+    this.#storage.setItem(
+      `question_${this.questionId}`,
+      JSON.stringify(this.results)
+    );
   };
 
   #syncAudience = () => {
