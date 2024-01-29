@@ -1,5 +1,3 @@
-//Met nick checken: staan de ID's in beeld, of alleen de opties.
-
 /**
  * @exports
  * @typedef {{ id: number, question: str, answers: str[] }} Question
@@ -18,7 +16,7 @@ export default Object.freeze({
     {
       "id": 2,
       "question": "How do you identify?",
-      "answers": ["Female", "Male", "Other"],
+      "answers": ["F", "M", "X"],
     },
     {
       "id": 3,
@@ -28,7 +26,7 @@ export default Object.freeze({
     {
       "id": 4,
       "question": "What is your income?",
-      "answers": ["-1000", "1000-2500", "2500-4000", "4000-5500", "5500"],
+      "answers": ["-1000", "1000-2500", "2500-4000", "4000-5500", "+5500"],
     },
     {
       "id": 5,

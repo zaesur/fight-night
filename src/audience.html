@@ -15,8 +15,10 @@
 
     <template>
       <figure class="result">
+        <span data-id="percentage">25%</span>
+
         <svg width="100" height="100">
-          <circle cx="50" cy="50" r="25">
+          <circle cx="50" cy="50">
             <animate
               attributeName="r"
               dur="1s"
@@ -26,7 +28,11 @@
             />
           </circle>
         </svg>
-        <label>Label</label>
+
+        <div class="option">
+          <span data-id="optionId" class="circle">0</span>
+          <label data-id="optionName">Label</label>
+        </div>
       </figure>
     </template>
   </body>

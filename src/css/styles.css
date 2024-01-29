@@ -1,6 +1,11 @@
+@font-face {
+  font-family: "Roboto";
+  src: url(../assets/Roboto-Regular.ttf);
+}
+
 * {
   box-sizing: border-box;
-  font-family: monospace, sans-serif;
+  font-family: Roboto, monospace, sans-serif;
 }
 
 body,

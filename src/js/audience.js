@@ -9,7 +9,7 @@ import { deserialize } from "./lib/serialize.js";
  * @param { AudienceState } state The current state.
  * @return { void }
  */
-const renderAudience = ({ isVisible, backgroundColor, options, results }) => {
+const renderAudience = ({ isVisible, backgroundColor, options }) => {
   const bodyElement = document.querySelector("body");
   const templateElement = document.querySelector("template");
   const resultsElement = document.getElementById("results");
@@ -18,21 +18,45 @@ const renderAudience = ({ isVisible, backgroundColor, options, results }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = isVisible ? "visible" : "hidden";
 
-  // Render options.
-  const nodes = options.map(({ optionId, optionName }, index) => {
-    const clone = document.importNode(templateElement.content, true);
-    const label = clone.querySelector("label");
-    label.textContent = `${optionId}: ${optionName}`;
+  // If we are not displaying we can return now.
+  if (!isVisible) return;
 
-    const result = results.find((result) => result.optionId === optionId);
-    if (result) {
-      label.textContent = label.textContent + "\n" + result.votes;
-    }
+  const renderOption = ({ optionId, optionName }) => {
+    const clone = document.importNode(templateElement.content, true);
+
+    // Set text, hide SVG
+    clone.querySelector("svg").style.display = "none";
+    clone.querySelector("[data-id='optionId']").textContent = optionId;
+    clone.querySelector("[data-id='optionName']").textContent = optionName;
+    clone.querySelector("[data-id='percentage']").style.display = "none";
 
     return clone;
-  });
+  };
 
-  resultsElement.replaceChildren(...nodes);
+  const renderResult = ({
+    optionName,
+    percentage = Math.random() * 100,
+    isAnimated = Math.random() > 0.5,
+  }) => {
+    const clone = document.importNode(templateElement.content, true);
+    const svg = clone.querySelector("svg");
+
+    // Set text, hide optionId
+    clone.querySelector("[data-id='optionId']").style.display = "none";
+    clone.querySelector("[data-id='optionName']").textContent = optionName;
+    clone.querySelector("[data-id='percentage']").textContent =
+      `${Math.round(percentage)}%`;
+
+    // Animate SVG
+    svg.querySelector("circle").setAttribute("r", percentage);
+    svg
+      .querySelector("animate")
+      .setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
+
+    return clone;
+  };
+
+  resultsElement.replaceChildren(...options.map(renderOption));
 };
 
 // Since renderAudience is deterministic we can render on every event.
