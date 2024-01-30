@@ -5,9 +5,9 @@ import Client, { ClientError } from "./lib/client.js";
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
-const DO_NOTHING = undefined;
 const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
+const resultsLabelElement = document.getElementById("results-label");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const getResultsButton = document.getElementById("get-results");
@@ -17,7 +17,7 @@ const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const countInput = document.getElementById("voter-count");
 
-const handlePromise = (promise, onSuccess, onFail, onFinished) => {
+const handlePromise = (promise, { onSuccess, onFail, onFinished }) => {
   promise
     .then((...args) => {
       errorElement.textContent = "";
@@ -44,9 +44,11 @@ startHardwareButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   const count = countInput.value;
-  handlePromise(app.startHardware(count), DO_NOTHING, DO_NOTHING, () => {
-    event.target.disabled = false;
-    countInput.focus();
+  handlePromise(app.startHardware(count), {
+    onFinished: () => {
+      event.target.disabled = false;
+      countInput.focus();
+    },
   });
 });
 
@@ -55,8 +57,10 @@ stopHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(app.stopHardware(), DO_NOTHING, DO_NOTHING, () => {
-    event.target.disabled = false;
+  handlePromise(app.stopHardware(), {
+    onFinished: () => {
+      event.target.disabled = false;
+    },
   });
 });
 
@@ -65,19 +69,17 @@ getResultsButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(
-    app.getResults().then((results) => {
+  handlePromise(app.getResults(), {
+    onSuccess: (results) => {
       for (const { optionId, votes } of results) {
         const input = resultsElement.querySelector(`input[name="${optionId}"]`);
         input.value = votes;
       }
-    }),
-    DO_NOTHING,
-    DO_NOTHING,
-    () => {
+    },
+    onFinished: () => {
       event.target.disabled = false;
-    }
-  );
+    },
+  });
 });
 
 // On stop question input.
@@ -85,8 +87,10 @@ stopQuestionButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(app.stopQuestion(), DO_NOTHING, DO_NOTHING, () => {
-    event.target.disabled = false;
+  handlePromise(app.stopQuestion(), {
+    onFinished: () => {
+      event.target.disabled = false;
+    },
   });
 });
 
@@ -96,12 +100,15 @@ publishQuestionButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   const formData = new FormData(resultsElement);
-  const results = Array.from(formData.entries()).map(([optionId, votes]) => {
-    return { optionId: parseInt(optionId), votes: parseInt(votes) };
-  });
 
-  handlePromise(app.publishQuestion(results), DO_NOTHING, DO_NOTHING, () => {
-    event.target.disabled = false;
+  handlePromise(app.publishQuestion(formData), {
+    onSuccess: () => {
+      resultsLabelElement.textContent = app.getActiveQuestionName();
+      resultsElement.querySelectorAll("input").forEach((input) => (input.value = undefined));
+    },
+    onFinished: () => {
+      event.target.disabled = false;
+    },
   });
 });
 
@@ -118,6 +125,8 @@ blackButton.addEventListener("click", (event) => {
 const renderControl = () => {
   const questionsElement = document.getElementById("questions");
   const templateElement = document.querySelector("template").content;
+
+  resultsLabelElement.textContent = app.getActiveQuestionName();
 
   const nodes = config.questions.map(({ id, question, answers }) => {
     const clone = document.importNode(templateElement, true);
@@ -139,21 +148,17 @@ const renderControl = () => {
       event.target.disabled = true;
 
       const formData = new FormData(form);
-      const options = Array.from(formData.entries()).map(
-        ([optionId, optionName]) => ({
-          optionId: parseInt(optionId),
-          optionName,
-        })
-      );
+      formData.append("questionName", question);
+      formData.append("questionId", id);
 
-      handlePromise(
-        app.startQuestion(id, options),
-        DO_NOTHING,
-        DO_NOTHING,
-        () => {
+      handlePromise(app.startQuestion(formData), {
+        onSuccess: () => {
+          resultsLabelElement.textContent = app.getActiveQuestionName();
+        },
+        onFinished: () => {
           event.target.disabled = false;
-        }
-      );
+        },
+      });
     });
 
     return clone;

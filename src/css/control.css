@@ -1,6 +1,9 @@
-main {
+:root {
   background-color: #303841;
   color: #eeeeee;
+}
+
+main {
   height: 100vh;
   padding: 2rem;
   display: flex;

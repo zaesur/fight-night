@@ -1,5 +1,4 @@
-import { mergeResults } from "./utils.js";
-
+import Question from "./question.js";
 /**
  * @typedef {import("./serialize.js").Option} Option
  * @typedef {import("./serialize.js").Result} Result
@@ -11,7 +10,18 @@ export default class App {
   #client;
   #storage;
 
-  questionId = 0;
+  /**
+   * @type { Question }
+   */
+  activeQuestion;
+
+  /**
+   *
+   * @type { Question[] }
+   */
+  questions;
+
+  // Audience stuff.
   isVisible = false;
   backgroundColor = "white";
   options = [];
@@ -26,7 +36,10 @@ export default class App {
   constructor(client, storage) {
     this.#client = client;
     this.#storage = storage;
+    this.#loadQuestionsFromStorage();
   }
+
+  getActiveQuestionName = () => this.activeQuestion?.questionName ?? "No question active";
 
   setBackgroundColor = (color) => {
     this.backgroundColor = color;
@@ -44,51 +57,71 @@ export default class App {
 
   getResults = async () => {
     const response = await this.#client.getResults();
-    return mergeResults(response.result);
+    this.activeQuestion.processResults(response.result);
+    this.#saveActiveQuestion();
+    return this.activeQuestion.options;
   };
 
-  startQuestion = async (questionId, options) => {
-    // Find the *highest* optionId to request that number of votes.
-    const filtered = options.filter(({ optionName }) => Boolean(optionName));
-    const max = filtered.reduce(
-      (max, { optionId }) => Math.max(max, optionId),
-      0
-    );
-    await this.#client.startQuestion(max);
+  /**
+   *
+   * @param { FormData } formData
+   * @memberof App
+   */
+  startQuestion = async (formData) => {
+    const question = Question.fromForm(formData);
+    const count = question.getCount();
+    await this.#client.startQuestion(count);
 
-    // This will not be reached if the above throws,
-    // so it won't end up at the audience.
-    this.questionId = questionId;
-    this.options = filtered;
-    this.results = [];
+    // If the above throws, this would not reach the audience.
     this.isVisible = true;
+    this.activeQuestion = question;
+    this.questions.push(question);
+    this.#saveActiveQuestion();
     this.#syncAudience();
   };
 
   stopQuestion = async () => {
     const response = await this.#client.stopQuestion();
-    this.results = mergeResults(response.result);
-    this.#syncDatabase();
+
+    this.activeQuestion.processResults(response.result);
+    this.#saveActiveQuestion();
   };
 
-  publishQuestion = async (results) => {
+  /**
+   *
+   *
+   * @param { FormData } formData
+   * @memberof App
+   */
+  publishQuestion = async (formData) => {
     this.isVisible = true;
 
-    for (const { optionId, votes } of results) {
-      const match = this.results.find((result) => result.optionId === optionId);
-      if (match) {
-        match.votes = votes;
-      }
+    for (const [optionId, votes] of formData.entries()) {
+      this.activeQuestion.setVotes(parseInt(optionId), parseInt(votes));
     }
-
+    this.#saveActiveQuestion();
+    this.activeQuestion = undefined;
+    this.#saveActiveQuestion();
     this.#syncAudience();
   };
 
-  #syncDatabase = () => {
-    this.#storage.setItem(
-      `question_${this.questionId}`,
-      JSON.stringify(this.results)
-    );
+  #loadQuestionsFromStorage = () => {
+    const id = parseInt(this.#storage.getItem("active_question"));
+    const questions = Object.entries(this.#storage)
+      .filter(([storageKey]) => storageKey.startsWith("question"))
+      .map(([_, value]) => Question.fromJSON(JSON.parse(value)));
+
+    this.questions = questions;
+    this.activeQuestion = this.questions.find(({ questionId }) => questionId === id);
+  };
+
+  #saveActiveQuestion = () => {
+    if (this.activeQuestion) {
+      this.#storage.setItem("active_question", this.activeQuestion.questionId);
+      this.#storage.setItem(`question_${this.activeQuestion.questionId}`, JSON.stringify(this.activeQuestion));
+    } else {
+      this.#storage.removeItem("active_question");
+    }
   };
 
   #syncAudience = () => {
