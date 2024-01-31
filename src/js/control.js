@@ -1,12 +1,14 @@
 import config from "../config.js";
 import App from "./lib/app.js";
 import Client, { ClientError } from "./lib/client.js";
+import { roundPercentages } from "./lib/utils.js";
 
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
 const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
+const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
@@ -37,6 +39,19 @@ const handlePromise = (promise, { onSuccess, onFail, onFinished }) => {
       onFinished?.();
     });
 };
+
+resultsElement.addEventListener("input", () => {
+  const formData = new FormData(resultsElement);
+  const values = Array.from(formData.values()).map(Number);
+
+  const total = values.reduce((r, n) => r + n, 0);
+  const dataset = values.map((value) => (value / total) * 100);
+  const percentages = roundPercentages(dataset);
+
+  for (const [index, percentage] of percentages.entries()) {
+    inputs[index].parentElement.childNodes[4].textContent = `${percentage}%`;
+  }
+});
 
 // On start hardware input.
 startHardwareButton.addEventListener("click", (event) => {
@@ -104,7 +119,7 @@ publishQuestionButton.addEventListener("click", (event) => {
   handlePromise(app.publishQuestion(formData), {
     onSuccess: () => {
       resultsLabelElement.textContent = app.getActiveQuestionName();
-      resultsElement.querySelectorAll("input").forEach((input) => (input.value = undefined));
+      resultsElement.querySelectorAll("input").forEach((input) => (input.value = ""));
     },
     onFinished: () => {
       event.target.disabled = false;
@@ -122,49 +137,45 @@ blackButton.addEventListener("click", (event) => {
   app.setBackgroundColor("black");
 });
 
-const renderControl = () => {
-  const questionsElement = document.getElementById("questions");
-  const templateElement = document.querySelector("template").content;
+const questionsElement = document.getElementById("questions");
+const templateElement = document.querySelector("template").content;
 
-  resultsLabelElement.textContent = app.getActiveQuestionName();
+resultsLabelElement.textContent = app.getActiveQuestionName();
 
-  const nodes = config.questions.map(({ id, question, answers }) => {
-    const clone = document.importNode(templateElement, true);
-    const form = clone.querySelector("form");
-    const legend = clone.querySelector("legend");
-    const inputs = clone.querySelectorAll("input");
-    const button = clone.querySelector("button");
+const nodes = config.questions.map(({ id, question, answers }) => {
+  const clone = document.importNode(templateElement, true);
+  const form = clone.querySelector("form");
+  const legend = clone.querySelector("legend");
+  const inputs = clone.querySelectorAll("input");
+  const button = clone.querySelector("button");
 
-    legend.textContent = `${id}: ${question}`;
-    for (const [i, answer] of answers.entries()) {
-      const input = inputs[i];
-      if (answer) {
-        input.value = answer;
-      }
+  legend.textContent = `${id}: ${question}`;
+  for (const [i, answer] of answers.entries()) {
+    const input = inputs[i];
+    if (answer) {
+      input.value = answer;
     }
+  }
 
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.target.disabled = true;
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.target.disabled = true;
 
-      const formData = new FormData(form);
-      formData.append("questionName", question);
-      formData.append("questionId", id);
+    const formData = new FormData(form);
+    formData.append("questionName", question);
+    formData.append("questionId", id);
 
-      handlePromise(app.startQuestion(formData), {
-        onSuccess: () => {
-          resultsLabelElement.textContent = app.getActiveQuestionName();
-        },
-        onFinished: () => {
-          event.target.disabled = false;
-        },
-      });
+    handlePromise(app.startQuestion(formData), {
+      onSuccess: () => {
+        resultsLabelElement.textContent = app.getActiveQuestionName();
+      },
+      onFinished: () => {
+        event.target.disabled = false;
+      },
     });
-
-    return clone;
   });
 
-  questionsElement.replaceChildren(...nodes);
-};
+  return clone;
+});
 
-renderControl();
+questionsElement.replaceChildren(...nodes);

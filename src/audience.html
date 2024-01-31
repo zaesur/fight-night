@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" style="cursor: zoom-in">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,26 +14,19 @@
     </main>
 
     <template>
-      <figure class="result">
+      <div class="result">
         <span data-id="percentage">25%</span>
 
-        <svg width="100" height="100">
-          <circle cx="50" cy="50">
-            <animate
-              attributeName="r"
-              dur="1s"
-              values="0;25"
-              calcMode="spline"
-              keySplines="0 0.5 0.5 1"
-            />
+        <svg width="200" height="200">
+          <circle cx="100" cy="100">
+            <animate attributeName="r" dur="2s" values="0;25" calcMode="spline" keySplines="0 0.5 0.5 1" />
           </circle>
         </svg>
 
-        <div class="option">
-          <span data-id="optionId" class="circle">0</span>
-          <label data-id="optionName">Label</label>
+        <div class="force-down">
+          <label class="option-label" data-id="optionName">Label</label>
         </div>
-      </figure>
+      </div>
     </template>
   </body>
   <script defer type="module" src="js/audience.js"></script>

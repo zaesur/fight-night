@@ -1,5 +1,6 @@
 body,
 html {
+  font-size: 24px;
   user-select: none;
 }
 
@@ -16,40 +17,26 @@ main {
   width: 90%;
   height: 100%;
   display: flex;
-  align-items: center;
+  /* align-items: center; */
+  justify-content: space-between;
 }
 
 .result {
-  height: 60%;
-  flex-grow: 1;
+  height: 100%;
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
 }
 
-.result > * {
-  height: 33%;
-}
-
-.option {
-  gap: 1rem;
-  display: flex;
-  align-items: center;
-}
-
-label {
-  font-size: 3rem;
+.option-label {
+  font-size: 2.3rem;
+  cursor: inherit;
   text-transform: uppercase;
 }
 
-.circle {
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  border: 0.125rem solid;
+.force-down {
+  text-align: center;
+  height: 5rem;
 }

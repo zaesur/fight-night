@@ -1,9 +1,6 @@
 import Question from "./question.js";
 /**
- * @typedef {import("./serialize.js").Option} Option
- * @typedef {import("./serialize.js").Result} Result
  * @typedef {import("./client.js").Client} Client
- * @typedef {import("./client.js").QuestionResponse["result"][0]} HardwareResult
  */
 
 export default class App {
@@ -21,11 +18,9 @@ export default class App {
    */
   questions;
 
-  // Audience stuff.
   isVisible = false;
+  isAnswered = false;
   backgroundColor = "white";
-  options = [];
-  results = [];
 
   /**
    * Creates an instance of App.
@@ -63,8 +58,8 @@ export default class App {
   };
 
   /**
-   *
-   * @param { FormData } formData
+   * Starts a new question, based on a form with the option names to use.
+   * @param { FormData } formData a form containing the question data
    * @memberof App
    */
   startQuestion = async (formData) => {
@@ -74,35 +69,43 @@ export default class App {
 
     // If the above throws, this would not reach the audience.
     this.isVisible = true;
+    this.isAnswered = false;
     this.activeQuestion = question;
     this.questions.push(question);
     this.#saveActiveQuestion();
     this.#syncAudience();
   };
 
+  /**
+   * Closes a question and saves the results.
+   * @memberof App
+   */
   stopQuestion = async () => {
     const response = await this.#client.stopQuestion();
 
     this.activeQuestion.processResults(response.result);
     this.#saveActiveQuestion();
+
+    return this.activeQuestion.options;
   };
 
   /**
-   *
-   *
-   * @param { FormData } formData
+   * Publish a question to the audience.
+   * Publishing a question does *NOT* query the hardware,
+   * instead it expects a form with the overridden votes.
+   * @param { FormData } formData a form containing possibly overridden votes
    * @memberof App
    */
   publishQuestion = async (formData) => {
-    this.isVisible = true;
+    const votes = Array.from(formData.entries()).map((vote) => vote.map((n) => (n ? parseInt(n) : 0)));
+    this.activeQuestion.setVotes(votes);
 
-    for (const [optionId, votes] of formData.entries()) {
-      this.activeQuestion.setVotes(parseInt(optionId), parseInt(votes));
-    }
-    this.#saveActiveQuestion();
+    this.isVisible = true;
+    this.isAnswered = true;
+    this.#syncAudience();
+
     this.activeQuestion = undefined;
     this.#saveActiveQuestion();
-    this.#syncAudience();
   };
 
   #loadQuestionsFromStorage = () => {
@@ -129,9 +132,9 @@ export default class App {
       "audience_state",
       JSON.stringify({
         isVisible: this.isVisible,
+        isAnswered: this.isAnswered,
         backgroundColor: this.backgroundColor,
-        options: this.options,
-        results: this.results,
+        options: this.activeQuestion?.options ?? [],
       })
     );
   };

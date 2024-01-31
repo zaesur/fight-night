@@ -42,6 +42,12 @@ export default class Client {
    */
   #getUrl = (path) => new URL(path, this.#baseUrl);
 
+  /**
+   * @template T
+   * @param { str } message
+   * @param { function(): T } fetchCallback
+   * @returns { function(): T }
+   */
   #withClientError =
     (message, fetchCallback) =>
     async (...fetchCallbackArgs) => {
@@ -51,16 +57,11 @@ export default class Client {
         if (response.ok) {
           return response.json();
         } else {
-          const isJsonResponse = response.headers
-            .get("Content-Type")
-            .includes("application/json");
+          const isJsonResponse = response.headers.get("Content-Type").includes("application/json");
 
           if (isJsonResponse) {
             const json = await response.json();
-            throw new ClientError(
-              message,
-              json["error"] ?? json["message"] ?? "unknown reason"
-            );
+            throw new ClientError(message, json["error"] ?? json["message"] ?? "unknown reason");
           } else {
             throw new ClientError(message, await response.text());
           }
@@ -72,30 +73,37 @@ export default class Client {
 
   /**
    * Requests the current state of the voting system.
-   * @returns { Promise<StateResponse> } A response object
    * @throws { ClientError }
    * @memberof Client
    */
-  getState = this.#withClientError("Failed to get the state.", () =>
-    fetch(this.#getUrl("api/state"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "*/*",
-      },
-    })
+  getState = this.#withClientError(
+    "Failed to get the state.",
+    /**
+     * @returns { Promise<StateResponse> }
+     */
+    () =>
+      fetch(this.#getUrl("api/state"), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "*/*",
+        },
+      })
   );
 
   /**
    * Requests to start the voting system.
+   *
+   * @throws { ClientError }
    * @param { number } keyPadMin Starting id of voting hardware
    * @param { number } keyPadMax Ending id of the voting hardware
-   * @returns { Promise<OkResponse> } A response object
-   * @throws { ClientError }
    * @memberof Client
    */
   startHardware = this.#withClientError(
     "Failed to start the hardware",
+    /**
+     * @return { Promise<OkResponse> }
+     */
     (keyPadMin, keyPadMax) =>
       fetch(this.#getUrl("api/hardware/start"), {
         method: "POST",
@@ -109,28 +117,34 @@ export default class Client {
 
   /**
    * Requests to stop the voting system.
-   * @returns { Promise<Promise<OkResponse>> } A response object
    * @throws { ClientError }
    * @memberof Client
    */
-  stopHardware = this.#withClientError("Failed to stop the hardware", () =>
-    fetch(this.#getUrl("api/hardware/stop"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-    })
+  stopHardware = this.#withClientError(
+    "Failed to stop the hardware",
+    /**
+     * @returns { Promise<OkResponse> }
+     */
+    () =>
+      fetch(this.#getUrl("api/hardware/stop"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      })
   );
 
   /**
    * Requests the voting sytem to start of a new question.
    * @param { number } items The number of available answers
-   * @returns { Promise<Promise<OkResponse>> } A response object
    * @memberof Client
    */
   startQuestion = this.#withClientError(
     "Failed to start the question",
+    /**
+     * @returns { Promise<OkResponse> }
+     */
     (items) =>
       fetch(this.#getUrl("api/question/start"), {
         method: "POST",
@@ -144,17 +158,21 @@ export default class Client {
 
   /**
    * Requests the voting system to close the question.
-   * @returns { Promise<QuestionResponse> } A response object
    * @memberof Client
    */
-  stopQuestion = this.#withClientError("Failed to stop the question", () =>
-    fetch(this.#getUrl("api/question/stop"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-    })
+  stopQuestion = this.#withClientError(
+    "Failed to stop the question",
+    /**
+     * @returns { Promise<QuestionResponse> }
+     */
+    () =>
+      fetch(this.#getUrl("api/question/stop"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      })
   );
 
   /**
@@ -163,13 +181,18 @@ export default class Client {
    * @returns { Promise<QuestionResponse> } A response object
    * @memberof Client
    */
-  getResults = this.#withClientError("Failed to get the results", () =>
-    fetch(this.#getUrl("api/question/results"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-    })
+  getResults = this.#withClientError(
+    "Failed to get the results",
+    /**
+     * @returns { Promise<QuestionResponse> }
+     */
+    () =>
+      fetch(this.#getUrl("api/question/results"), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      })
   );
 }

@@ -15,6 +15,7 @@ export default class Question {
   constructor(questionId, questionName, options) {
     this.questionName = questionName;
     this.questionId = typeof questionId === "number" ? questionId : parseInt(questionId);
+    this.isAnimated = [5, 6, 14].includes(questionId);
     this.options = options
       .filter(({ optionName }) => Boolean(optionName))
       .map(({ optionId, ...other }) => ({ optionId: parseInt(optionId), ...other }));
@@ -57,20 +58,27 @@ export default class Question {
       const keypadIds = buckets[option.optionId] ?? [];
       option.keypadIds = keypadIds;
       option.votes = keypadIds.length;
+      option.percentage = (keypadIds.length / results.length) * 100;
     }
   };
 
   /**
-   * Set the votes for an option.
+   * Set the votes.
    * This is to facilitate forging votes, the original votes will be kept in keypadIds.
    * @param { number } optionId
    * @param { number } votes
    * @memberof Question
    */
-  setVotes = (optionId, votes) => {
-    const option = this.findOption(optionId);
-    if (option) {
-      option.votes = votes;
+  setVotes = (votes) => {
+    const total = votes.reduce((total, [_, count]) => total + count, 0);
+
+    for (const [optionId, count] of votes) {
+      const option = this.findOption(optionId);
+
+      if (option) {
+        option.votes = count;
+        option.percentage = (count / total) * 100;
+      }
     }
   };
 
@@ -85,6 +93,7 @@ export default class Question {
     questionId: this.questionId,
     questionName: this.questionName,
     options: this.options,
+    isAnimated: this.isAnimated,
   });
 
   /**

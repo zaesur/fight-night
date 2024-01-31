@@ -1,9 +1,3 @@
-import { deserialize } from "./lib/serialize.js";
-
-/**
- * @typedef {import("./lib/serialize.js").AudienceState} AudienceState
- */
-
 const templateElement = document.querySelector("template");
 
 /**
@@ -16,9 +10,9 @@ const renderOption = ({ optionId, optionName }) => {
 
   // Set text, hide SVG
   clone.querySelector("svg").style.display = "none";
-  clone.querySelector("[data-id='optionId']").textContent = optionId;
-  clone.querySelector("[data-id='optionName']").textContent = optionName;
   clone.querySelector("[data-id='percentage']").style.display = "none";
+  clone.querySelector("[data-id='optionName']").textContent =
+    `${String.fromCodePoint(0x245f + optionId)} ${optionName}`;
 
   return clone;
 };
@@ -28,35 +22,26 @@ const renderOption = ({ optionId, optionName }) => {
  * @param {*} param0
  * @returns
  */
-const renderResult = ({
-  optionName,
-  percentage = Math.random() * 100,
-  isAnimated = Math.random() > 0.5,
-}) => {
+const renderResult = ({ optionName, percentage, isAnimated }) => {
   const clone = document.importNode(templateElement.content, true);
   const svg = clone.querySelector("svg");
 
-  // Set text, hide optionId
-  clone.querySelector("[data-id='optionId']").style.display = "none";
   clone.querySelector("[data-id='optionName']").textContent = optionName;
-  clone.querySelector("[data-id='percentage']").textContent =
-    `${Math.round(percentage)}%`;
+  clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
 
   // Animate SVG
   svg.querySelector("circle").setAttribute("r", percentage);
-  svg
-    .querySelector("animate")
-    .setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
+  svg.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
 
   return clone;
 };
 
 /**
  * Deterministically renders the UI based on state.
- * @param { AudienceState } state The current state.
+ * @param { any } state The current state.
  * @return { void }
  */
-const renderAudience = ({ isVisible, backgroundColor, options }) => {
+const renderAudience = ({ isVisible, isAnswered, backgroundColor, options }) => {
   const bodyElement = document.querySelector("body");
   const resultsElement = document.getElementById("results");
 
@@ -67,13 +52,13 @@ const renderAudience = ({ isVisible, backgroundColor, options }) => {
   // If we are not displaying we can return now.
   if (!isVisible) return;
 
-  resultsElement.replaceChildren(...options.map(renderOption));
+  resultsElement.replaceChildren(...options.map(isAnswered ? renderResult : renderOption));
 };
 
 // Since renderAudience is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {
   if (event.newValue && event.key === "audience_state") {
-    const state = deserialize(event.newValue);
+    const state = JSON.parse(event.newValue);
     renderAudience(state);
   }
 });
@@ -89,11 +74,9 @@ document.addEventListener("click", () => {
 
 // Hide the mouse in fullscreen, else show a magnifying glass.
 document.addEventListener("fullscreenchange", () => {
-  document.documentElement.style.cursor = document.fullscreenElement
-    ? "none"
-    : "zoom-in";
+  document.documentElement.style.cursor = document.fullscreenElement ? "none" : "zoom-in";
 });
 
 // Initialize on first load.
-const state = deserialize(window.localStorage.getItem("audience_state"));
+const state = JSON.parse(window.localStorage.getItem("audience_state"));
 renderAudience(state);
