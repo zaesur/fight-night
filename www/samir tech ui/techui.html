@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            text-align: center;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        /*
+        div {
+            border: 1px solid black;
+        }
+        */
+
+        input {
+            text-align: center;
+        }
+
+        .container {
+            min-height: 100%;
+            display: flex;
+        }
+
+        .column {
+            flex: auto;
+        }
+
+        .button {
+            font-size: large;
+        }
+
+        #leftColumn {
+            flex: 2;
+            min-width: 70%;
+            background-color: blue;
+        }
+
+        .qWrap {
+            display: flex;
+            border-bottom: 2px solid black;
+            padding: 3px;
+            margin-bottom: 5px;
+            min-height: 100px;
+        }
+
+        .qWrap > * {
+            flex: auto;
+        }
+
+        #question1 .optionInput, #question2 .optionInput {
+            display: none;
+        }
+
+        .buttonPWrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .qPar {
+            margin: 0;
+            padding: 3px;
+            font-size: large;
+        }
+
+        .buttonWrap {
+            display: flex;
+            flex: auto;
+        }
+
+        .qButton {
+            flex: auto;
+            margin: 1% 2%;
+        }
+
+        .inputWrap {
+            max-width: 30%;
+        }
+
+        .qNum {
+            max-width: 20px;
+            justify-content: center;
+            font-size: xx-large;
+        }
+
+        #rightColumn {
+            background-color: yellow;
+            display: flex;
+            width: 30%;
+            flex-direction: column;
+        }
+
+        #blackWhiteButtons {
+            flex: 0 1 auto;
+            display: flex;
+            min-height: 15%;
+        }
+
+        .blackWhite {
+            flex: auto;
+        }
+
+        #voteContainer {
+            background-color: grey;
+            flex: 1 1 auto;
+            margin: 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .voteholder {
+            display: flex;
+            flex-direction: column;
+            border: none;
+        }
+
+        .votes {
+            font-size: larger;
+            margin: 0 10%;
+            max-width: 100px;
+        }
+
+        label {
+            padding: 10px;
+            font-size: x-large;
+        }
+
+        #currentQ {
+            font-size: xx-large;
+            font-weight: 900;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+         <div class="column" id="leftColumn">
+
+            <div class="qWrap" id="question1">
+                <p class="qNum">1</p>
+                <div class="inputWrap">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                </div>
+                <div class="buttonPWrap">
+                    <p class="qPar">Did you pay for your ticket?</p>
+                    <div class="buttonWrap">
+                        <button class="button qButton">Open vote</button>
+                        <button class="button qButton">Close Vote</button>
+                        <button class="button qButton">Publish result</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qWrap" id="question2">
+                <p class="qNum">2</p>
+                <div class="inputWrap">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                </div>
+                <div class="buttonPWrap">
+                    <p class="qPar">What's your Gender?</p>
+                    <div class="buttonWrap">
+                        <button class="button qButton">Open vote</button>
+                        <button class="button qButton">Close Vote</button>
+                        <button class="button qButton">Publish result</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qWrap" id="question13">
+                <p class="qNum">13</p>
+                <div class="inputWrap">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                </div>
+                <div class="buttonPWrap">
+                    <p class="qPar">3 candidates winning?</p>
+                    <div class="buttonWrap">
+                        <button class="button qButton">Open vote</button>
+                        <button class="button qButton">Close Vote</button>
+                        <button class="button qButton">Publish result</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="qWrap" id="question14">
+                <p class="qNum">14</p>
+                <div class="inputWrap">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                    <input class="optionInput" placeholder="name">
+                </div>
+                <div class="buttonPWrap">
+                    <p class="qPar">Host joins election</p>
+                    <div class="buttonWrap">
+                        <button class="button qButton">Open vote</button>
+                        <button class="button qButton">Close Vote</button>
+                        <button class="button qButton">Publish result</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="column" id="rightColumn">
+            <div id="blackWhiteButtons">
+                <button class="button blackWhite">White</button>
+                <button class="button blackWhite">Black</button>
+            </div>
+            <p class="p question" id="currentQ">What's your gender?</p>
+            <div id="voteContainer">
+                <div class="voteholder">
+                    <label class="label answer" for="votes1">Male</label>
+                    <input id="votes1" class="votes" placeholder="100">
+                    <label class="label perct" for="votes1">33%</label>
+                </div>
+
+                <div class="voteholder">
+                    <label class="label answer" for="votes2">Female</label>
+                    <input id="votes2" class="votes" placeholder="100">
+                    <label class="label perct" for="votes2">33%</label>
+                </div>
+
+                <div class="voteholder">
+                    <label class="label answer" for="votes3">Other</label>
+                    <input id="votes3" class="votes" placeholder="100">
+                    <label class="label perct" for="votes3">33%</label>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
