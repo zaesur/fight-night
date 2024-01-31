@@ -1,9 +1,62 @@
-form {
-  gap: 1rem;
+:root {
+  background-color: #303841;
+  color: #eeeeee;
+}
+
+main {
+  height: 100vh;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+legend {
+  font-size: 1rem;
+}
+
+.column {
   display: flex;
   flex-direction: column;
 }
 
-input[type="button"] {
-  padding: 1rem 2rem;
+.left-column {
+  flex-grow: 3;
+  height: 100%;
+}
+
+.right-column {
+  flex-grow: 1;
+  overflow-y: scroll;
+}
+
+.question {
+  display: flex;
+  justify-content: space-between;
+}
+
+.options {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.options :first-child {
+  margin-bottom: 1rem;
+}
+
+.options :last-child {
+  margin-top: 1rem;
+}
+
+#error {
+  height: 4rem;
+}
+
+#results {
+  display: flex;
+  flex-direction: column;
+}
+
+.results-buttons {
+  margin-top: 1rem;
 }

@@ -5,83 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/control.css" />
-    <title>Question</title>
+    <link rel="shortcut icon" href="#" />
+    <title>Fight Night (Control)</title>
   </head>
   <body>
-    <main style="display: flex; justify-content: center">
-      <form>
-        <input type="button" value="Open voting, show question" id="open" />
-        <input
-          type="button"
-          value="Close voting, show results"
-          id="show"
-          disabled="true"
-        />
-        <input type="button" value="Hide results" id="hide" disabled="true" />
-      </form>
+    <main>
+      <section class="column left-column">
+        <form>
+          <fieldset>
+            <legend>Hardware</legend>
+            <label for="count">Number of voters:</label>
+            <input id="voter-count" name="count" type="number" placeholder="0" min="0" />
+            <button id="start-hardware">Start hardware</button>
+            <button id="stop-hardware">Stop hardware</button>
+          </fieldset>
+
+          <fieldset>
+            <legend>Audience</legend>
+            <button id="set-white">White background</button>
+            <button id="set-black">Black background</button>
+          </fieldset>
+        </form>
+
+        <form id="results">
+          <fieldset>
+            <legend id="results-label">Results</legend>
+            <div>
+              <label for="1">1:</label>
+              <input name="1" type="number" min="0" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="2">2:</label>
+              <input name="2" type="number" min="0" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="3">3:</label>
+              <input name="3" type="number" min="0" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="4">4:</label>
+              <input name="4" type="number" min="0" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div>
+              <label for="5">5:</label>
+              <input name="5" type="number" min="0" />
+              <button disabled>Publish</button>
+            </div>
+
+            <div class="results-buttons">
+              <button id="get-results">Get results</button>
+              <button id="stop-question">Close voting</button>
+              <button id="publish-question">Publish results</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Errors</legend>
+            <p id="error"></p>
+          </fieldset>
+        </form>
+      </section>
+      <section id="questions" class="column right-column"></section>
     </main>
+
+    <template>
+      <form>
+        <fieldset class="options">
+          <legend class="label">Question</legend>
+          <input name="1" type="text" placeholder="disabled" />
+          <input name="2" type="text" placeholder="disabled" />
+          <input name="3" type="text" placeholder="disabled" />
+          <input name="4" type="text" placeholder="disabled" />
+          <input name="5" type="text" placeholder="disabled" />
+          <button>Start voting</button>
+        </fieldset>
+      </form>
+    </template>
   </body>
-
-  <script type="module">
-    import constants from "./js/constants.js";
-
-    let interval;
-    const openButton = document.getElementById("open");
-    const showButton = document.getElementById("show");
-    const hideButton = document.getElementById("hide");
-
-    const { question, results } = {
-      question: "What colour are your socks?",
-      results: {
-        1: {
-          answer: "Red",
-          count: 3,
-          percentage: 15,
-        },
-        2: {
-          answer: "Green",
-          count: 7,
-          percentage: 35,
-        },
-        3: {
-          answer: "Blue",
-          count: 10,
-          percentage: 50,
-        },
-      },
-    };
-
-    // Open Voting
-    openButton.addEventListener("click", () => {
-      openButton.disabled = true;
-      showButton.disabled = false;
-
-      interval = setInterval(() => {
-        console.log("Getting intermediate results");
-      }, 1000);
-
-      localStorage.removeItem(constants.OPTIONS);
-      localStorage.setItem(constants.OPTIONS, JSON.stringify(results));
-    });
-
-    // Close voting
-    showButton.addEventListener("click", () => {
-      showButton.disabled = true;
-      hideButton.disabled = false;
-
-      window.clearInterval(interval);
-
-      localStorage.removeItem(constants.RESULTS);
-      localStorage.setItem(constants.RESULTS, JSON.stringify(results));
-    });
-
-    // Hide results
-    hideButton.addEventListener("click", () => {
-      hideButton.disabled = true;
-      openButton.disabled = false;
-
-      localStorage.removeItem(constants.RESULTS);
-      localStorage.removeItem(constants.OPTIONS);
-    });
-  </script>
+  <script defer type="module" src="js/control.js"></script>
 </html>

@@ -1,28 +1,42 @@
+body,
+html {
+  font-size: 24px;
+  user-select: none;
+}
+
 main {
   width: 100vw;
   height: 100vh;
-
-  gap: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  visibility: hidden;
 }
 
-section.results {
-  gap: 2rem;
+#results {
+  width: 90%;
+  height: 100%;
   display: flex;
+  /* align-items: center; */
+  justify-content: space-between;
 }
 
-figure.result {
-  gap: 1rem;
+.result {
+  height: 100%;
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-around;
 }
 
-figure svg {
-  visibility: hidden;
+.option-label {
+  font-size: 2.3rem;
+  cursor: inherit;
+  text-transform: uppercase;
+}
+
+.force-down {
+  text-align: center;
+  height: 5rem;
 }
