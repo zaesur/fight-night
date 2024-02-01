@@ -3,24 +3,25 @@
 //collumns form all answers per voter
 
 var answerMatrix = [[]];
-var answerRow = [];
-
 
 Object.keys(localStorage).forEach(key=> {
-//map through all localstorage objects
+//map through all localstorage objects, if it contains questionId, for each voteoption, paste that option into right slot in the answerRow. Then spread that answerrow into the answermatrix
+
+
     var storObj = JSON.parse(localStorage.getItem(key))
 
     if (storObj.questionId) {
+        var answerRow = [];
         storObj.options.forEach(el =>
             //for each option
             el.keypadIds.forEach(id =>
                 answerRow[id] = el.optionId
-                //store the vote in the appropriate space in the answerRow   
             )
         )
-    answerMatrix[storObj.questionId] = answerRow
-    //store the row in the right collumn
+
+        answerMatrix[storObj.questionId-1] = [...answerRow]
     }
+
 })
 
 
