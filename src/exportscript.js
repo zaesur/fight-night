@@ -1,37 +1,34 @@
+//create a matrix of all votes received from all voting ID's and download as a csv file
+//rows form all answers per question
+//collumns form all answers per voter
+
 var answerMatrix = [[]];
-var answerCollumn = [];
+var answerRow = [];
 
 
 Object.keys(localStorage).forEach(key=> {
+//map through all localstorage objects
     var storObj = JSON.parse(localStorage.getItem(key))
 
     if (storObj.questionId) {
         storObj.options.forEach(el =>
+            //for each option
             el.keypadIds.forEach(id =>
-                answerCollumn[id] = el.optionId
+                answerRow[id] = el.optionId
+                //store the vote in the appropriate space in the answerRow   
             )
         )
-    answerMatrix[storObj.questionId] = answerCollumn
+    answerMatrix[storObj.questionId] = answerRow
+    //store the row in the right collumn
     }
 })
 
 
+
+//create csvContent
 let csvContent = "data:text/csv;charset=utf-8," 
     + answerMatrix.map(e => e.join(",")).join("\n");
 
+//download file as csv
 var encodedUri = encodeURI(csvContent);
 window.open(encodedUri);
-
-
-
-// JSON.parse(localStorage.question_1).options.forEach(el =>
-//     el.keypadIds.forEach(id =>
-//         answerCollumn[id] = el.optionId
-//     )
-// )
-
-
-
-// Math.max(
-//     ...JSON.parse(localStorage.question_1).options[0].keypadIds
-// )
