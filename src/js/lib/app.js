@@ -43,7 +43,7 @@ export default class App {
   };
 
   startHardware = async (number) => {
-    await this.#client.startHardware(0, number);
+    await this.#client.startHardware(1, number);
   };
 
   stopHardware = async () => {

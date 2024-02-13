@@ -6,7 +6,7 @@
  */
 export default Object.freeze({
   // Could be window.location in production, if served from the same server.
-  "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
+  "apiUrl": "http://localhost:3000",
   "questions": [
     {
       "id": 1,
