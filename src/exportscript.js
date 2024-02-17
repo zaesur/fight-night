@@ -2,34 +2,28 @@
 //rows form all answers per question
 //collumns form all answers per voter
 
-var answerMatrix = [[]];
+const answerMatrix = [[]];
 
-Object.keys(localStorage).forEach(key=> {
-//map through all localstorage objects, if it contains questionId, for each voteoption, paste that option into right slot in the answerRow. Then spread that answerrow into the answermatrix
+Object.entries(localStorage).forEach(([key, value]) => {
+  //map through all localstorage objects, if it contains questionId, for each voteoption, paste that option into right slot in the answerRow. Then spread that answerrow into the answermatrix
 
+  const storObj = JSON.parse(value);
 
-    var storObj = JSON.parse(localStorage.getItem(key))
+  if (storObj.questionId) {
+    const answerRow = [];
+    storObj.options.forEach((el) =>
+      //for each option
+      el.keypadIds.forEach((id) => (answerRow[id] = el.optionId))
+    );
 
-    if (storObj.questionId) {
-        var answerRow = [];
-        storObj.options.forEach(el =>
-            //for each option
-            el.keypadIds.forEach(id =>
-                answerRow[id] = el.optionId
-            )
-        )
-
-        answerMatrix[storObj.questionId-1] = [...answerRow]
-    }
-
-})
-
-
+    answerMatrix[storObj.questionId - 1] = [...answerRow];
+  }
+});
 
 //create csvContent
-let csvContent = "data:text/csv;charset=utf-8," 
-    + answerMatrix.map(e => e.join(",")).join("\n");
+const csvContent = answerMatrix.map((e) => e.join(",")).join("\n");
+const csvFile = `data:text/csv;charset=utf-8,${csvContent}`;
 
 //download file as csv
-var encodedUri = encodeURI(csvContent);
+const encodedUri = encodeURI(csvFile);
 window.open(encodedUri);
