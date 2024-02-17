@@ -70,6 +70,7 @@ export default class App {
     // If the above throws, this would not reach the audience.
     this.isVisible = true;
     this.isAnswered = false;
+    this.backgroundColor = "white";
     this.activeQuestion = question;
     this.questions.push(question);
     this.#saveActiveQuestion();
