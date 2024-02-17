@@ -30,7 +30,7 @@ export default Object.freeze({
     {
       "id": 4,
       "question": "What is your income?",
-      "answers": ["-1000", "1000-2500", "2500-4000", "4000-5500", "+5500"],
+      "answers": ["-1000", "1000-2500", "2500-4000", "4000-5500", "5500+"],
       "activeOptions": 5,
     },
     {

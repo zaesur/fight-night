@@ -27,8 +27,8 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ questionId, questionName, options, activeOptions }) => {
-    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions);
+  fromJSON = ({ questionId, questionName, options, activeOptions, rawResults }) => {
+    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions, rawResults);
   };
 
   /**

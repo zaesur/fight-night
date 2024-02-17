@@ -108,6 +108,51 @@ export default class App {
     this.#syncAudience();
   };
 
+  findQuestionById = (id) => {
+    return this.questions.find(({ questionId }) => questionId === id);
+  };
+
+  summarize = () => {
+    const q1 = this.findQuestionById(1);
+    const q2 = this.findQuestionById(2);
+    const q3 = this.findQuestionById(3);
+    const q4 = this.findQuestionById(4);
+    const q8 = this.findQuestionById(8);
+    const q10 = this.findQuestionById(10);
+    const q18 = this.findQuestionById(18);
+
+    const q18Voters = q18.findKeypadIdsByOptionIds([1, 2]);
+    const q1Majority = q1.findMaxOptionByKeypadIds(q18Voters).optionId;
+    const q2Majority = q2.findMaxOptionByKeypadIds(q18Voters).optionId;
+    const q3Majority = q3.findMaxOptionByKeypadIds(q18Voters);
+    const q4Majority = q4.findMaxOptionByKeypadIds(q18Voters);
+    const q8Majority = q8.findMaxOptionByKeypadIds(q18Voters).optionId;
+    const q10Majority = q10.findMaxOptionByKeypadIds(q18Voters).optionId;
+    const q18Majority = q10.findMaxOptionByKeypadIds(q18Voters).optionId;
+
+    const religion = q8Majority === 1 ? "A religious" : q8Majority === 2 ? "A spiritual" : "An atheist";
+    const gender = q2Majority === 1 ? "woman" : q2Majority === 2 ? "man" : "person";
+    const age = q3Majority.optionName;
+    const salary = q4Majority.optionName;
+    const pronoun = q2Majority === 1 ? "She is" : q2Majority === 2 ? "He is" : "They are";
+    const bias =
+      q10Majority === 1
+        ? "a little bit racist"
+        : q10Majority === 2
+          ? "a little bit sexist"
+          : q10Majority === 3
+            ? "a little bit violent"
+            : "neither racist, sexist nor violent";
+    const ticket = q1Majority === 1 ? "paid" : "did not pay";
+    const leave = q18Majority === 1 ? "leave" : "stay";
+
+    return `
+      The majority is:
+      ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
+      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to ${leave}.
+    `;
+  };
+
   #syncAudience = () => {
     this.#storage.setItem(
       "audience_state",
