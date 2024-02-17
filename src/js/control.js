@@ -3,6 +3,9 @@ import App from "./lib/app.js";
 import Client, { ClientError } from "./lib/client.js";
 import { roundPercentages } from "./lib/utils.js";
 
+let interval;
+const intervalTimeout = 5000;
+
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -12,7 +15,6 @@ const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
-const getResultsButton = document.getElementById("get-results");
 const stopQuestionButton = document.getElementById("stop-question");
 const publishQuestionButton = document.getElementById("publish-question");
 const whiteButton = document.getElementById("set-white");
@@ -45,13 +47,16 @@ resultsElement.addEventListener("input", () => {
   const values = Array.from(formData.values()).map(Number);
 
   const total = values.reduce((r, n) => r + n, 0);
-  const dataset = values.map((value) => (value / total) * 100);
+  const dataset = values.map((value) => (value / total) * 100 || 0);
   const percentages = roundPercentages(dataset);
 
   for (const [index, percentage] of percentages.entries()) {
     inputs[index].parentElement.childNodes[4].textContent = `${percentage}%`;
   }
 });
+
+// Fires the event to calculate percentages on first load.
+resultsElement.dispatchEvent(new Event("input"));
 
 // On start hardware input.
 startHardwareButton.addEventListener("click", (event) => {
@@ -79,30 +84,15 @@ stopHardwareButton.addEventListener("click", (event) => {
   });
 });
 
-// On get results input.
-getResultsButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  handlePromise(app.getResults(), {
-    onSuccess: (results) => {
-      for (const { optionId, votes } of results) {
-        const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-        input.value = votes;
-      }
-    },
-    onFinished: () => {
-      event.target.disabled = false;
-    },
-  });
-});
-
 // On stop question input.
 stopQuestionButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
   handlePromise(app.stopQuestion(), {
+    onSuccess: () => {
+      window.clearInterval(interval);
+    },
     onFinished: () => {
       event.target.disabled = false;
     },
@@ -116,16 +106,35 @@ publishQuestionButton.addEventListener("click", (event) => {
 
   const formData = new FormData(resultsElement);
 
-  handlePromise(app.publishQuestion(formData), {
+  handlePromise(app.publishAllQuestion(formData), {
     onSuccess: () => {
+      window.clearInterval(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
-      resultsElement.querySelectorAll("input").forEach((input) => (input.value = ""));
+      resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
+      resultsElement.dispatchEvent(new Event("input"));
     },
     onFinished: () => {
       event.target.disabled = false;
     },
   });
 });
+
+const publishButtons = document.querySelectorAll("[data-option-id]");
+for (const button of publishButtons) {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.target.disabled = true;
+
+    const optionId = parseInt(button.dataset.optionId);
+    const formData = new FormData(resultsElement);
+
+    handlePromise(app.publishQuestion(optionId, formData), {
+      onFinished: () => {
+        event.target.disabled = false;
+      },
+    });
+  });
+}
 
 whiteButton.addEventListener("click", (event) => {
   event.preventDefault();
@@ -142,7 +151,7 @@ const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, answers }) => {
+const nodes = config.questions.map(({ id, question, answers, activeOptions }) => {
   const clone = document.importNode(templateElement, true);
   const form = clone.querySelector("form");
   const legend = clone.querySelector("legend");
@@ -164,10 +173,24 @@ const nodes = config.questions.map(({ id, question, answers }) => {
     const formData = new FormData(form);
     formData.append("questionName", question);
     formData.append("questionId", id);
+    formData.append("activeOptions", activeOptions);
 
     handlePromise(app.startQuestion(formData), {
       onSuccess: () => {
         resultsLabelElement.textContent = app.getActiveQuestionName();
+
+        const refresh = () => {
+          app.getResults().then((results) => {
+            for (const { optionId, votes } of results) {
+              const input = resultsElement.querySelector(`input[name="${optionId}"]`);
+              input.value = votes;
+              resultsElement.dispatchEvent(new Event("input"));
+            }
+          });
+        };
+
+        refresh();
+        interval = window.setInterval(refresh, intervalTimeout);
       },
       onFinished: () => {
         event.target.disabled = false;

@@ -15,7 +15,7 @@
           <fieldset>
             <legend>Hardware</legend>
             <label for="count">Number of voters:</label>
-            <input id="voter-count" name="count" type="number" placeholder="0" min="0" />
+            <input id="voter-count" name="count" type="number" placeholder="50" min="1" />
             <button id="start-hardware">Start hardware</button>
             <button id="stop-hardware">Stop hardware</button>
           </fieldset>
@@ -32,36 +32,35 @@
             <legend id="results-label">Results</legend>
             <div>
               <label for="1">1:</label>
-              <input name="1" type="number" min="0" />
-              <button disabled>Publish</button>
+              <input name="1" type="number" min="0" value="0" />
+              <button data-option-id="1">Publish</button>
             </div>
 
             <div>
               <label for="2">2:</label>
-              <input name="2" type="number" min="0" />
-              <button disabled>Publish</button>
+              <input name="2" type="number" min="0" value="0" />
+              <button data-option-id="2">Publish</button>
             </div>
 
             <div>
               <label for="3">3:</label>
-              <input name="3" type="number" min="0" />
-              <button disabled>Publish</button>
+              <input name="3" type="number" min="0" value="0" />
+              <button data-option-id="3">Publish</button>
             </div>
 
             <div>
               <label for="4">4:</label>
-              <input name="4" type="number" min="0" />
-              <button disabled>Publish</button>
+              <input name="4" type="number" min="0" value="0" />
+              <button data-option-id="4">Publish</button>
             </div>
 
             <div>
               <label for="5">5:</label>
-              <input name="5" type="number" min="0" />
-              <button disabled>Publish</button>
+              <input name="5" type="number" min="0" value="0" />
+              <button data-option-id="5">Publish</button>
             </div>
 
             <div class="results-buttons">
-              <button id="get-results">Get results</button>
               <button id="stop-question">Close voting</button>
               <button id="publish-question">Publish results</button>
             </div>
@@ -73,18 +72,18 @@
           </fieldset>
         </form>
       </section>
-      <section id="questions" class="column right-column"></section>
+      <section id="questions" class="column right-column" />
     </main>
 
     <template>
       <form>
         <fieldset class="options">
           <legend class="label">Question</legend>
-          <input name="1" type="text" placeholder="disabled" />
-          <input name="2" type="text" placeholder="disabled" />
-          <input name="3" type="text" placeholder="disabled" />
-          <input name="4" type="text" placeholder="disabled" />
-          <input name="5" type="text" placeholder="disabled" />
+          <input name="option" type="text" placeholder="disabled" />
+          <input name="option" type="text" placeholder="disabled" />
+          <input name="option" type="text" placeholder="disabled" />
+          <input name="option" type="text" placeholder="disabled" />
+          <input name="option" type="text" placeholder="disabled" />
           <button>Start voting</button>
         </fieldset>
       </form>

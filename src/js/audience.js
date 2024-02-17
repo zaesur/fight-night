@@ -2,8 +2,7 @@ const templateElement = document.querySelector("template");
 
 /**
  *
- * @param {*} param0
- * @returns
+ * @return { documentFragment }
  */
 const renderOption = ({ optionId, optionName }) => {
   const clone = document.importNode(templateElement.content, true);
@@ -11,20 +10,22 @@ const renderOption = ({ optionId, optionName }) => {
   // Set text, hide SVG
   clone.querySelector("svg").style.display = "none";
   clone.querySelector("[data-id='percentage']").style.display = "none";
-  clone.querySelector("[data-id='optionName']").textContent =
-    `${String.fromCodePoint(0x245f + optionId)} ${optionName}`;
+
+  const label = String.fromCodePoint(0x245f + optionId);
+  clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
 
   return clone;
 };
 
 /**
  *
- * @param {*} param0
- * @returns
+ * @return { DocumentFragment }
  */
-const renderResult = ({ optionName, percentage, isAnimated }) => {
+const renderResult = ({ optionName, percentage, isAnimated = true, show }) => {
   const clone = document.importNode(templateElement.content, true);
   const svg = clone.querySelector("svg");
+
+  clone.firstElementChild.style.visibility = show ? "inherit" : "hidden";
 
   clone.querySelector("[data-id='optionName']").textContent = optionName;
   clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
@@ -38,7 +39,6 @@ const renderResult = ({ optionName, percentage, isAnimated }) => {
 
 /**
  * Deterministically renders the UI based on state.
- * @param { any } state The current state.
  * @return { void }
  */
 const renderAudience = ({ isVisible, isAnswered, backgroundColor, options }) => {

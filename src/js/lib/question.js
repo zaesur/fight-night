@@ -1,40 +1,77 @@
 /**
+ * @typedef {import("./client.js").Client} Client
  * @typedef {{ optionName: str, optionId: number, options: Option }} QuestionJSON
  * @typedef {import("./client.js").QuestionResponse["result"][0]} HardwareResult
  * @typedef {{ optionId: number, optionName: str keypadIds: number[], votes: number }} Option
  */
 
 export default class Question {
+  #client;
+  #storage;
+
+  isClosed = true;
+  isAnswered = false;
+
   /**
    * Creates an instance of Question.
-   * @param { str | number } questionId
+   * @param { Client } client
+   * @param { number } questionId
    * @param { str } questionName
    * @param { Option[] } options
    * @memberof Question
    */
-  constructor(questionId, questionName, options) {
+  constructor(client, storage, questionId, questionName, options, activeOptions) {
+    this.#client = client;
+    this.#storage = storage;
+
+    this.questionId = questionId;
     this.questionName = questionName;
-    this.questionId = typeof questionId === "number" ? questionId : parseInt(questionId);
-    this.isAnimated = [5, 6, 14].includes(questionId);
-    this.options = options
-      .filter(({ optionName }) => Boolean(optionName))
-      .map(({ optionId, ...other }) => ({ optionId: parseInt(optionId), ...other }));
+    this.options = options;
+    this.activeOptions = activeOptions;
   }
 
-  /**
-   * Finds the option by optionId.
-   * @param { number } optionId
-   * @returns { Option | undefined }
-   * @memberof Question
-   */
-  findOption = (optionId) => this.options.find((option) => option.optionId === optionId);
+  start = async () => {
+    await this.#client.startQuestion(this.activeOptions);
+    this.isClosed = false;
+  };
 
-  /**
-   * Returns the number of keypads to activate.
-   * @returns { number }
-   * @memberof Question
-   */
-  getCount = () => this.options.reduce((max, { optionId }) => Math.max(max, optionId), 0);
+  close = async () => {
+    const response = await this.#client.stopQuestion();
+    this.processResults(response.result);
+    this.isClosed = true;
+  };
+
+  publish = async (optionId, formData) => {
+    this.isAnswered = true;
+    if (!this.isClosed) {
+      await this.close();
+    }
+
+    for (const option of this.options) {
+      option.show = option.optionId === optionId;
+    }
+  };
+
+  publishAll = async (formData) => {
+    this.isAnswered = true;
+    if (!this.isClosed) {
+      await this.close();
+    }
+
+    for (const option of this.options) {
+      option.show = true;
+    }
+  };
+
+  refresh = async () => {
+    const response = await this.#client.getResults();
+    this.processResults(response.result);
+  };
+
+  save = () => {
+    this.#storage.setItem("active_question", this.questionId);
+    this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
+  };
 
   /**
    * Process incoming results from the hardware.
@@ -63,26 +100,6 @@ export default class Question {
   };
 
   /**
-   * Set the votes.
-   * This is to facilitate forging votes, the original votes will be kept in keypadIds.
-   * @param { number } optionId
-   * @param { number } votes
-   * @memberof Question
-   */
-  setVotes = (votes) => {
-    const total = votes.reduce((total, [_, count]) => total + count, 0);
-
-    for (const [optionId, count] of votes) {
-      const option = this.findOption(optionId);
-
-      if (option) {
-        option.votes = count;
-        option.percentage = (count / total) * 100;
-      }
-    }
-  };
-
-  /**
    * Used for serialization.
    * Automatically invoked by JSON.stringify.
    * @example JSON.stringify(new Question(...))
@@ -93,36 +110,6 @@ export default class Question {
     questionId: this.questionId,
     questionName: this.questionName,
     options: this.options,
-    isAnimated: this.isAnimated,
+    activeOptions: this.activeOptions,
   });
-
-  /**
-   * Used for deserialization.
-   * @static
-   * @param { QuestionJSON } json
-   * @memberof Question
-   */
-  static fromJSON = ({ questionId, questionName, options }) => {
-    return new Question(questionId, questionName, options);
-  };
-
-  /**
-   * Used to create a Question based on form data.
-   * @static
-   * @param { FormData } formData
-   * @memberof Question
-   */
-  static fromForm = (formData) => {
-    return new Question(
-      ...Array.from(formData.entries()).reduce(
-        ([questionId, questionName, options], [key, value]) =>
-          key === "questionId"
-            ? [parseInt(value), questionName, options]
-            : key === "questionName"
-              ? [questionId, value, options]
-              : [questionId, questionName, [...options, { optionId: parseInt(key), optionName: value }]],
-        [undefined, undefined, []]
-      )
-    );
-  };
 }

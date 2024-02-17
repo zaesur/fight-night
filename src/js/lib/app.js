@@ -1,4 +1,5 @@
 import Question from "./question.js";
+import QuestionFactory from "./questionFactory.js";
 /**
  * @typedef {import("./client.js").Client} Client
  */
@@ -6,6 +7,7 @@ import Question from "./question.js";
 export default class App {
   #client;
   #storage;
+  #factory;
 
   /**
    * @type { Question }
@@ -31,7 +33,8 @@ export default class App {
   constructor(client, storage) {
     this.#client = client;
     this.#storage = storage;
-    this.#loadQuestionsFromStorage();
+    this.#factory = new QuestionFactory(client, storage);
+    [this.activeQuestion, this.questions] = this.#factory.loadAll();
   }
 
   getActiveQuestionName = () => this.activeQuestion?.questionName ?? "No question active";
@@ -43,88 +46,66 @@ export default class App {
   };
 
   startHardware = async (number) => {
-    await this.#client.startHardware(1, number);
+    await this.#client.startHardware(1, parseInt(number) + 1);
   };
 
   stopHardware = async () => {
     await this.#client.stopHardware();
   };
 
+  /**
+   * Refreshes the voting results of the active question.
+   * @return {*}
+   */
   getResults = async () => {
-    const response = await this.#client.getResults();
-    this.activeQuestion.processResults(response.result);
-    this.#saveActiveQuestion();
+    await this.activeQuestion.refresh();
     return this.activeQuestion.options;
   };
 
   /**
-   * Starts a new question, based on a form with the option names to use.
+   * Starts a new question.
    * @param { FormData } formData a form containing the question data
    * @memberof App
    */
   startQuestion = async (formData) => {
-    const question = Question.fromForm(formData);
-    const count = question.getCount();
-    await this.#client.startQuestion(count);
+    // Create the question.
+    this.activeQuestion = this.#factory.fromForm(formData);
+    this.questions.push(this.activeQuestion);
 
-    // If the above throws, this would not reach the audience.
+    // Start the question.
+    await this.activeQuestion.start();
+    this.activeQuestion.save();
+
+    // Send to the audience.
+    this.backgroundColor = "white";
     this.isVisible = true;
-    this.isAnswered = false;
-    this.activeQuestion = question;
-    this.questions.push(question);
-    this.#saveActiveQuestion();
     this.#syncAudience();
   };
 
   /**
-   * Closes a question and saves the results.
+   * Closes the active question.
    * @memberof App
    */
   stopQuestion = async () => {
-    const response = await this.#client.stopQuestion();
-
-    this.activeQuestion.processResults(response.result);
-    this.#saveActiveQuestion();
-
-    return this.activeQuestion.options;
+    await this.activeQuestion.close();
+    this.activeQuestion.save();
   };
 
   /**
    * Publish a question to the audience.
-   * Publishing a question does *NOT* query the hardware,
-   * instead it expects a form with the overridden votes.
    * @param { FormData } formData a form containing possibly overridden votes
    * @memberof App
    */
-  publishQuestion = async (formData) => {
-    const votes = Array.from(formData.entries()).map((vote) => vote.map((n) => (n ? parseInt(n) : 0)));
-    this.activeQuestion.setVotes(votes);
-
+  publishAllQuestion = async (formData) => {
+    this.activeQuestion.publishAll(formData);
     this.isVisible = true;
-    this.isAnswered = true;
     this.#syncAudience();
-
-    this.activeQuestion = undefined;
-    this.#saveActiveQuestion();
   };
 
-  #loadQuestionsFromStorage = () => {
-    const id = parseInt(this.#storage.getItem("active_question"));
-    const questions = Object.entries(this.#storage)
-      .filter(([storageKey]) => storageKey.startsWith("question"))
-      .map(([_, value]) => Question.fromJSON(JSON.parse(value)));
-
-    this.questions = questions;
-    this.activeQuestion = this.questions.find(({ questionId }) => questionId === id);
-  };
-
-  #saveActiveQuestion = () => {
-    if (this.activeQuestion) {
-      this.#storage.setItem("active_question", this.activeQuestion.questionId);
-      this.#storage.setItem(`question_${this.activeQuestion.questionId}`, JSON.stringify(this.activeQuestion));
-    } else {
-      this.#storage.removeItem("active_question");
-    }
+  publishQuestion = async (optionId, formData) => {
+    this.activeQuestion.publish(optionId, formData);
+    this.isVisible = true;
+    this.#syncAudience();
   };
 
   #syncAudience = () => {
@@ -132,7 +113,7 @@ export default class App {
       "audience_state",
       JSON.stringify({
         isVisible: this.isVisible,
-        isAnswered: this.isAnswered,
+        isAnswered: this.activeQuestion?.isAnswered ?? false,
         backgroundColor: this.backgroundColor,
         options: this.activeQuestion?.options ?? [],
       })
