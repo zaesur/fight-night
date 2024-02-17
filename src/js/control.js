@@ -119,6 +119,23 @@ publishQuestionButton.addEventListener("click", (event) => {
   });
 });
 
+const publishButtons = document.querySelectorAll("[data-option-id]");
+for (const button of publishButtons) {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.target.disabled = true;
+
+    const optionId = parseInt(button.dataset.optionId);
+    const formData = new FormData(resultsElement);
+
+    handlePromise(app.activeQuestion.publish(optionId, formData), {
+      onFinished: () => {
+        event.target.disabled = false;
+      },
+    });
+  });
+}
+
 whiteButton.addEventListener("click", (event) => {
   event.preventDefault();
   app.setBackgroundColor("white");
@@ -134,7 +151,7 @@ const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, answers }) => {
+const nodes = config.questions.map(({ id, question, answers, activeOptions }) => {
   const clone = document.importNode(templateElement, true);
   const form = clone.querySelector("form");
   const legend = clone.querySelector("legend");
@@ -156,6 +173,7 @@ const nodes = config.questions.map(({ id, question, answers }) => {
     const formData = new FormData(form);
     formData.append("questionName", question);
     formData.append("questionId", id);
+    formData.append("activeOptions", activeOptions);
 
     handlePromise(app.startQuestion(formData), {
       onSuccess: () => {
