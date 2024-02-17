@@ -46,12 +46,20 @@ export default class Question {
     if (!this.isClosed) {
       await this.close();
     }
+
+    for (const option of this.options) {
+      option.show = option.optionId === optionId;
+    }
   };
 
   publishAll = async (formData) => {
     this.isAnswered = true;
     if (!this.isClosed) {
       await this.close();
+    }
+
+    for (const option of this.options) {
+      option.show = true;
     }
   };
 
@@ -102,5 +110,6 @@ export default class Question {
     questionId: this.questionId,
     questionName: this.questionName,
     options: this.options,
+    activeOptions: this.activeOptions,
   });
 }

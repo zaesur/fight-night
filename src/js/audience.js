@@ -21,9 +21,11 @@ const renderOption = ({ optionId, optionName }) => {
  *
  * @return { DocumentFragment }
  */
-const renderResult = ({ optionName, percentage, isAnimated }) => {
+const renderResult = ({ optionName, percentage, isAnimated = true, show }) => {
   const clone = document.importNode(templateElement.content, true);
   const svg = clone.querySelector("svg");
+
+  clone.firstElementChild.style.visibility = show ? "inherit" : "hidden";
 
   clone.querySelector("[data-id='optionName']").textContent = optionName;
   clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
@@ -39,7 +41,7 @@ const renderResult = ({ optionName, percentage, isAnimated }) => {
  * Deterministically renders the UI based on state.
  * @return { void }
  */
-const renderAudience = ({ isVisible, isAnswered, isAnimated, backgroundColor, options }) => {
+const renderAudience = ({ isVisible, isAnswered, backgroundColor, options }) => {
   const bodyElement = document.querySelector("body");
   const resultsElement = document.getElementById("results");
 

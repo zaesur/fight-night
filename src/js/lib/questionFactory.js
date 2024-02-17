@@ -27,8 +27,8 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ questionId, questionName, options }) => {
-    return new Question(this.#client, this.#storage, questionId, questionName, options);
+  fromJSON = ({ questionId, questionName, options, activeOptions }) => {
+    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions);
   };
 
   /**
@@ -39,16 +39,14 @@ export default class QuestionFactory {
    * @memberof Question
    */
   fromForm = (formData) => {
-    return new Question(
-      this.#client,
-      this.#storage,
-      parseInt(formData.get("questionId")),
-      formData.get("questionName"),
-      formData
-        .getAll("option")
-        .map((optionName, index) => ({ optionId: parseInt(index + 1), optionName }))
-        .filter(({ optionName }) => Boolean(optionName)),
-      parseInt(formData.get("activeOptions"))
-    );
+    const questionId = parseInt(formData.get("questionId"));
+    const questionName = formData.get("questionName");
+    const activeOptions = parseInt(formData.get("activeOptions"));
+    const options = formData
+      .getAll("option")
+      .map((optionName, index) => ({ optionId: index + 1, optionName }))
+      .filter(({ optionName }) => Boolean(optionName));
+
+    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions);
   };
 }

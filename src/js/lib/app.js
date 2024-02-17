@@ -98,14 +98,12 @@ export default class App {
    */
   publishAllQuestion = async (formData) => {
     this.activeQuestion.publishAll(formData);
-
     this.isVisible = true;
     this.#syncAudience();
   };
 
   publishQuestion = async (optionId, formData) => {
     this.activeQuestion.publish(optionId, formData);
-
     this.isVisible = true;
     this.#syncAudience();
   };
@@ -115,9 +113,9 @@ export default class App {
       "audience_state",
       JSON.stringify({
         isVisible: this.isVisible,
+        isAnswered: this.activeQuestion?.isAnswered ?? false,
         backgroundColor: this.backgroundColor,
         options: this.activeQuestion?.options ?? [],
-        isAnswered: this.activeQuestion?.isAnswered ?? false,
       })
     );
   };

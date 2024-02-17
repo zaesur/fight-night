@@ -106,7 +106,7 @@ publishQuestionButton.addEventListener("click", (event) => {
 
   const formData = new FormData(resultsElement);
 
-  handlePromise(app.publishQuestion(formData), {
+  handlePromise(app.publishAllQuestion(formData), {
     onSuccess: () => {
       window.clearInterval(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
@@ -128,7 +128,7 @@ for (const button of publishButtons) {
     const optionId = parseInt(button.dataset.optionId);
     const formData = new FormData(resultsElement);
 
-    handlePromise(app.activeQuestion.publish(optionId, formData), {
+    handlePromise(app.publishQuestion(optionId, formData), {
       onFinished: () => {
         event.target.disabled = false;
       },
