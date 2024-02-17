@@ -6,6 +6,7 @@
  */
 export default Object.freeze({
   // Could be window.location in production, if served from the same server.
+  // "apiUrl": "http://localhost:3000",
   "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
   "questions": [
     {
@@ -67,13 +68,7 @@ export default Object.freeze({
     {
       "id": 12,
       "question": "How fair is the system?",
-      "answers": [
-        "Totally unfair",
-        "Little unfair",
-        "Neutral",
-        "Almost fair",
-        "Totally fair",
-      ],
+      "answers": ["Totally unfair", "Little unfair", "Neutral", "Almost fair", "Totally fair"],
     },
     {
       "id": 13,
@@ -88,13 +83,7 @@ export default Object.freeze({
     {
       "id": 15,
       "question": "Who is winning novote",
-      "answers": [
-        "NAME AGREE",
-        "NAME DISAGREE",
-        undefined,
-        undefined,
-        "NAME NOVOTE",
-      ],
+      "answers": ["NAME AGREE", "NAME DISAGREE", undefined, undefined, "NAME NOVOTE"],
       //agree is 1, disagree is 2, novote is 5
     },
     {
