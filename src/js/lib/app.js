@@ -17,6 +17,7 @@ export default class App {
    * @type { Question[] }
    */
   questions;
+  isClosed = true;
 
   isVisible = false;
   isAnswered = false;
@@ -43,7 +44,7 @@ export default class App {
   };
 
   startHardware = async (number) => {
-    await this.#client.startHardware(1, number);
+    await this.#client.startHardware(1, parseInt(number) + 1);
   };
 
   stopHardware = async () => {
@@ -67,7 +68,7 @@ export default class App {
     const count = question.getCount();
     await this.#client.startQuestion(count);
 
-    // If the above throws, this would not reach the audience.
+    this.isClosed = false;
     this.isVisible = true;
     this.isAnswered = false;
     this.backgroundColor = "white";
@@ -78,16 +79,12 @@ export default class App {
   };
 
   /**
-   * Closes a question and saves the results.
+   * Closes a question.
    * @memberof App
    */
   stopQuestion = async () => {
-    const response = await this.#client.stopQuestion();
-
-    this.activeQuestion.processResults(response.result);
-    this.#saveActiveQuestion();
-
-    return this.activeQuestion.options;
+    await this.#client.stopQuestion();
+    this.isClosed = true;
   };
 
   /**
@@ -98,15 +95,18 @@ export default class App {
    * @memberof App
    */
   publishQuestion = async (formData) => {
-    const votes = Array.from(formData.entries()).map((vote) => vote.map((n) => (n ? parseInt(n) : 0)));
-    this.activeQuestion.setVotes(votes);
+    if (!this.isClosed) {
+      await this.stopQuestion().catch();
+    }
+
+    const formVotes = Array.from(formData.entries()).map((vote) => vote.map((n) => (n ? parseInt(n) : 0)));
+    this.activeQuestion.setVotes(formVotes);
+    this.#saveActiveQuestion();
 
     this.isVisible = true;
     this.isAnswered = true;
     this.#syncAudience();
-
-    this.activeQuestion = undefined;
-    this.#saveActiveQuestion();
+    this.#clearActiveQuestion();
   };
 
   #loadQuestionsFromStorage = () => {
@@ -126,6 +126,11 @@ export default class App {
     } else {
       this.#storage.removeItem("active_question");
     }
+  };
+
+  #clearActiveQuestion = () => {
+    this.activeQuestion = undefined;
+    this.#saveActiveQuestion();
   };
 
   #syncAudience = () => {

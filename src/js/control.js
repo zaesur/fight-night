@@ -3,6 +3,9 @@ import App from "./lib/app.js";
 import Client, { ClientError } from "./lib/client.js";
 import { roundPercentages } from "./lib/utils.js";
 
+let interval;
+const intervalTimeout = 5000;
+
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -12,7 +15,6 @@ const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
-const getResultsButton = document.getElementById("get-results");
 const stopQuestionButton = document.getElementById("stop-question");
 const publishQuestionButton = document.getElementById("publish-question");
 const whiteButton = document.getElementById("set-white");
@@ -82,30 +84,15 @@ stopHardwareButton.addEventListener("click", (event) => {
   });
 });
 
-// On get results input.
-getResultsButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  handlePromise(app.getResults(), {
-    onSuccess: (results) => {
-      for (const { optionId, votes } of results) {
-        const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-        input.value = votes;
-      }
-    },
-    onFinished: () => {
-      event.target.disabled = false;
-    },
-  });
-});
-
 // On stop question input.
 stopQuestionButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
   handlePromise(app.stopQuestion(), {
+    onSuccess: () => {
+      window.clearInterval(interval);
+    },
     onFinished: () => {
       event.target.disabled = false;
     },
@@ -121,8 +108,10 @@ publishQuestionButton.addEventListener("click", (event) => {
 
   handlePromise(app.publishQuestion(formData), {
     onSuccess: () => {
+      window.clearInterval(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
-      resultsElement.querySelectorAll("input").forEach((input) => (input.value = ""));
+      resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
+      resultsElement.dispatchEvent(new Event("input"));
     },
     onFinished: () => {
       event.target.disabled = false;
@@ -171,6 +160,19 @@ const nodes = config.questions.map(({ id, question, answers }) => {
     handlePromise(app.startQuestion(formData), {
       onSuccess: () => {
         resultsLabelElement.textContent = app.getActiveQuestionName();
+
+        const refresh = () => {
+          app.getResults().then((results) => {
+            for (const { optionId, votes } of results) {
+              const input = resultsElement.querySelector(`input[name="${optionId}"]`);
+              input.value = votes;
+              resultsElement.dispatchEvent(new Event("input"));
+            }
+          });
+        };
+
+        refresh();
+        interval = window.setInterval(refresh, intervalTimeout);
       },
       onFinished: () => {
         event.target.disabled = false;
