@@ -45,13 +45,16 @@ resultsElement.addEventListener("input", () => {
   const values = Array.from(formData.values()).map(Number);
 
   const total = values.reduce((r, n) => r + n, 0);
-  const dataset = values.map((value) => (value / total) * 100);
+  const dataset = values.map((value) => (value / total) * 100 || 0);
   const percentages = roundPercentages(dataset);
 
   for (const [index, percentage] of percentages.entries()) {
     inputs[index].parentElement.childNodes[4].textContent = `${percentage}%`;
   }
 });
+
+// Fires the event to calculate percentages on first load.
+resultsElement.dispatchEvent(new Event("input"));
 
 // On start hardware input.
 startHardwareButton.addEventListener("click", (event) => {
