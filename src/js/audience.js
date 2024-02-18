@@ -51,7 +51,6 @@ const renderResults = ({ options, isAnimated, optionsShown }) => {
 };
 
 const renderSummary = ({ summary }) => {
-  console.log(summary);
   const element = document.createElement("div");
   element.classList.add("summary");
   element.textContent = summary;
@@ -59,7 +58,10 @@ const renderSummary = ({ summary }) => {
 };
 
 const renderVoterIds = ({ voterIds }) => {
-  console.log(voterIds);
+  const element = document.createElement("div");
+  element.classList.add("novote");
+  element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
+  resultsElement.replaceChildren(element);
 };
 
 const render = (state, data) => {

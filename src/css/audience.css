@@ -37,7 +37,9 @@ main {
   vertical-align: super;
 }
 
-.summary {
+.summary,
+.novote {
+  width: 100%;
   text-align: center;
 }
 

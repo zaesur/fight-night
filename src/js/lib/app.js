@@ -9,17 +9,8 @@ export default class App {
   #storage;
   #factory;
 
-  /**
-   * @type { Question }
-   */
   activeQuestion;
-
-  /**
-   *
-   * @type { Question[] }
-   */
   questions;
-
   audienceState = "showBlank";
   backgroundColor = "white";
 
@@ -52,13 +43,15 @@ export default class App {
     await this.#client.stopHardware();
   };
 
-  /**
-   * Refreshes the voting results of the active question.
-   * @return {*}
-   */
   getResults = async () => {
     await this.activeQuestion.refresh();
     return this.activeQuestion.options;
+  };
+
+  getActiveKeypadIds = async () => {
+    const response = await this.#client.getState();
+    this.keypadIds = response.result.keypadIds;
+    return this.keypadIds;
   };
 
   /**
@@ -153,9 +146,15 @@ export default class App {
     this.#syncAudience();
   };
 
-  publishVoterIds = () => {
+  publishVoterIds = async () => {
     this.audienceState = "showVoterIds";
-    this.voterIds = [1, 2, 3];
+
+    const q18 = this.findQuestionById(18);
+    const q18KeypadIds = q18.rawResults.map(({ keypadId }) => keypadId);
+    const activeKeypadIds = await this.getActiveKeypadIds();
+    const nonVoters = activeKeypadIds.filter((keypadId) => !q18KeypadIds.includes(keypadId));
+
+    this.voterIds = nonVoters;
     this.#syncAudience();
   };
 
