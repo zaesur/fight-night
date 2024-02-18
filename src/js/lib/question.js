@@ -10,7 +10,6 @@ export default class Question {
   #storage;
 
   isClosed = true;
-  isAnswered = false;
 
   /**
    * Creates an instance of Question.
@@ -20,7 +19,7 @@ export default class Question {
    * @param { Option[] } options
    * @memberof Question
    */
-  constructor(client, storage, questionId, questionName, options, activeOptions) {
+  constructor(client, storage, questionId, questionName, options, activeOptions, rawResults) {
     this.#client = client;
     this.#storage = storage;
 
@@ -28,6 +27,9 @@ export default class Question {
     this.questionName = questionName;
     this.options = options;
     this.activeOptions = activeOptions;
+    this.rawResults = rawResults;
+
+    this.isAnimated = [5, 6, 14, 15, 16, 17].includes(questionId);
   }
 
   start = async () => {
@@ -41,26 +43,20 @@ export default class Question {
     this.isClosed = true;
   };
 
-  publish = async (optionId, formData) => {
-    this.isAnswered = true;
+  publish = async (formData, optionId) => {
     if (!this.isClosed) {
       await this.close();
     }
 
-    for (const option of this.options) {
-      option.show = option.optionId === optionId;
-    }
+    this.optionsShown = [optionId];
   };
 
   publishAll = async (formData) => {
-    this.isAnswered = true;
     if (!this.isClosed) {
       await this.close();
     }
 
-    for (const option of this.options) {
-      option.show = true;
-    }
+    this.optionsShown = this.options.map(({ optionId }) => optionId);
   };
 
   refresh = async () => {
@@ -73,14 +69,8 @@ export default class Question {
     this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
   };
 
-  /**
-   * Process incoming results from the hardware.
-   * @param { HardwareResult[] } results
-   * @memberof Question
-   */
-  processResults = (results) => {
-    // Gather the results by optionId in a dictionary.
-    const buckets = results.reduce((acc, { keypadId, options: [optionId] }) => {
+  sortResultsByOptionId = (results) => {
+    return results.reduce((acc, { keypadId, options: [optionId] }) => {
       if (acc?.[optionId]) {
         acc[optionId].push(keypadId);
       } else {
@@ -89,6 +79,16 @@ export default class Question {
 
       return acc;
     }, {});
+  };
+
+  /**
+   * Process incoming results from the hardware.
+   * @param { HardwareResult[] } results
+   * @memberof Question
+   */
+  processResults = (results) => {
+    // Gather the results by optionId in a dictionary.
+    const buckets = this.sortResultsByOptionId(results);
 
     // Save the results.
     for (const option of this.options) {
@@ -97,6 +97,29 @@ export default class Question {
       option.votes = keypadIds.length;
       option.percentage = (keypadIds.length / results.length) * 100;
     }
+
+    this.rawResults = results;
+  };
+
+  findOptionById = (id) => this.options.find(({ optionId }) => optionId === id);
+
+  findKeypadIdsByOptionIds = (optionIds) => {
+    return this.rawResults
+      .filter(({ options: [optionId] }) => optionIds.includes(optionId))
+      .map(({ keypadId }) => keypadId);
+  };
+
+  findMaxOptionByKeypadIds = (keypadIds) => {
+    const filtered = this.rawResults.filter(({ keypadId }) => keypadIds.includes(keypadId));
+    const sorted = this.sortResultsByOptionId(filtered);
+    const [max] = Object.entries(sorted).reduce(
+      ([max, votes], [optionId, keypadIds]) =>
+        keypadIds.length > votes ? [parseInt(optionId), keypadIds.length] : [max, votes],
+      [-1, 0]
+    );
+    const option = this.findOptionById(max);
+
+    return option;
   };
 
   /**
@@ -111,5 +134,6 @@ export default class Question {
     questionName: this.questionName,
     options: this.options,
     activeOptions: this.activeOptions,
+    rawResults: this.rawResults,
   });
 }

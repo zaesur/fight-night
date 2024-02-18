@@ -17,6 +17,7 @@ const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const stopQuestionButton = document.getElementById("stop-question");
 const publishQuestionButton = document.getElementById("publish-question");
+const summarizeButton = document.getElementById("summarize");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const countInput = document.getElementById("voter-count");
@@ -117,6 +118,11 @@ publishQuestionButton.addEventListener("click", (event) => {
       event.target.disabled = false;
     },
   });
+});
+
+summarizeButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  app.publishSummary();
 });
 
 const publishButtons = document.querySelectorAll("[data-option-id]");

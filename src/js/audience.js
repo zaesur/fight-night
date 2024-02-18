@@ -1,65 +1,84 @@
 const templateElement = document.querySelector("template");
+const bodyElement = document.querySelector("body");
+const resultsElement = document.getElementById("results");
 
-/**
- *
- * @return { documentFragment }
- */
-const renderOption = ({ optionId, optionName }) => {
-  const clone = document.importNode(templateElement.content, true);
-
-  // Set text, hide SVG
-  clone.querySelector("svg").style.display = "none";
-  clone.querySelector("[data-id='percentage']").style.display = "none";
-
-  const label = String.fromCodePoint(0x245f + optionId);
-  clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
-
-  return clone;
-};
-
-/**
- *
- * @return { DocumentFragment }
- */
-const renderResult = ({ optionName, percentage, isAnimated = true, show }) => {
-  const clone = document.importNode(templateElement.content, true);
-  const svg = clone.querySelector("svg");
-
-  clone.firstElementChild.style.visibility = show ? "inherit" : "hidden";
-
-  clone.querySelector("[data-id='optionName']").textContent = optionName;
-  clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
-
-  // Animate SVG
-  svg.querySelector("circle").setAttribute("r", percentage);
-  svg.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
-
-  return clone;
-};
-
-/**
- * Deterministically renders the UI based on state.
- * @return { void }
- */
-const renderAudience = ({ isVisible, isAnswered, backgroundColor, options }) => {
-  const bodyElement = document.querySelector("body");
-  const resultsElement = document.getElementById("results");
-
-  // Applies to all states.
+const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
-  bodyElement.style.visibility = isVisible ? "visible" : "hidden";
+  bodyElement.style.visibility = "hidden";
+};
 
-  // If we are not displaying we can return now.
-  if (!isVisible) return;
+const renderOptions = ({ options }) => {
+  bodyElement.style.backgroundColor = "white";
+  bodyElement.style.visibility = "visible";
 
-  resultsElement.replaceChildren(...options.map(isAnswered ? renderResult : renderOption));
+  const renderOption = ({ optionId, optionName }) => {
+    const clone = document.importNode(templateElement.content, true);
+
+    // Set text, hide SVG
+    clone.querySelector("svg").style.display = "none";
+    clone.querySelector("[data-id='percentage']").style.display = "none";
+
+    const label = String.fromCodePoint(0x245f + optionId);
+    clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
+
+    return clone;
+  };
+
+  resultsElement.replaceChildren(...options.map(renderOption));
+};
+
+const renderResults = ({ options, isAnimated, optionsShown }) => {
+  bodyElement.style.backgroundColor = "white";
+  bodyElement.style.visibility = "visible";
+
+  const renderResult = ({ optionName, optionId, percentage }) => {
+    const clone = document.importNode(templateElement.content, true);
+    const svg = clone.querySelector("svg");
+
+    clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
+
+    clone.querySelector("[data-id='optionName']").textContent = optionName;
+    clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
+
+    // Animate SVG
+    svg.querySelector("circle").setAttribute("r", percentage);
+    svg.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
+
+    return clone;
+  };
+
+  resultsElement.replaceChildren(...options.map(renderResult));
+};
+
+const renderSummary = ({ summary }) => {
+  console.log(summary);
+  const element = document.createElement("div");
+  element.classList.add("summary");
+  element.textContent = summary;
+  resultsElement.replaceChildren(element);
+};
+
+const renderVoterIds = ({ voterIds }) => {
+  console.log(voterIds);
+};
+
+const render = (state, data) => {
+  const map = {
+    "showBlank": renderBlank,
+    "showOptions": renderOptions,
+    "showResults": renderResults,
+    "showSummary": renderSummary,
+    "showVoterIds": renderVoterIds,
+  };
+
+  map[state](data);
 };
 
 // Since renderAudience is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {
   if (event.newValue && event.key === "audience_state") {
-    const state = JSON.parse(event.newValue);
-    renderAudience(state);
+    const { state, data } = JSON.parse(event.newValue);
+    render(state, data);
   }
 });
 
@@ -78,5 +97,5 @@ document.addEventListener("fullscreenchange", () => {
 });
 
 // Initialize on first load.
-const state = JSON.parse(window.localStorage.getItem("audience_state"));
-renderAudience(state);
+const { state, data } = JSON.parse(window.localStorage.getItem("audience_state"));
+render(state, data);
