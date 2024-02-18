@@ -29,6 +29,8 @@ export default class Question {
     this.options = options;
     this.activeOptions = activeOptions;
     this.rawResults = rawResults;
+
+    this.isAnimated = [5, 6, 14, 15, 16, 17].includes(questionId);
   }
 
   start = async () => {
