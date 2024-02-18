@@ -20,8 +20,7 @@ export default class App {
    */
   questions;
 
-  isVisible = false;
-  isAnswered = false;
+  audienceState = "showBlank";
   backgroundColor = "white";
 
   /**
@@ -40,8 +39,8 @@ export default class App {
   getActiveQuestionName = () => this.activeQuestion?.questionName ?? "No question active";
 
   setBackgroundColor = (color) => {
+    this.audienceState = "showBlank";
     this.backgroundColor = color;
-    this.isVisible = false;
     this.#syncAudience();
   };
 
@@ -68,17 +67,11 @@ export default class App {
    * @memberof App
    */
   startQuestion = async (formData) => {
-    // Create the question.
+    this.audienceState = "showOptions";
     this.activeQuestion = this.#factory.fromForm(formData);
     this.questions.push(this.activeQuestion);
-
-    // Start the question.
     await this.activeQuestion.start();
     this.activeQuestion.save();
-
-    // Send to the audience.
-    this.backgroundColor = "white";
-    this.isVisible = true;
     this.#syncAudience();
   };
 
@@ -97,14 +90,14 @@ export default class App {
    * @memberof App
    */
   publishAllQuestion = async (formData) => {
-    this.activeQuestion.publishAll(formData);
-    this.isVisible = true;
+    this.audienceState = "showResults";
+    await this.activeQuestion.publishAll(formData);
     this.#syncAudience();
   };
 
   publishQuestion = async (optionId, formData) => {
-    this.activeQuestion.publish(optionId, formData);
-    this.isVisible = true;
+    this.audienceState = "showResults";
+    await this.activeQuestion.publish(formData, optionId);
     this.#syncAudience();
   };
 
@@ -112,7 +105,7 @@ export default class App {
     return this.questions.find(({ questionId }) => questionId === id);
   };
 
-  summarize = () => {
+  createSummary = () => {
     const q1 = this.findQuestionById(1);
     const q2 = this.findQuestionById(2);
     const q3 = this.findQuestionById(3);
@@ -153,14 +146,33 @@ export default class App {
     `;
   };
 
+  publishSummary = () => {
+    this.audienceState = "showSummary";
+    this.summary = "my summary";
+    this.#syncAudience();
+  };
+
+  publishVoterIds = () => {
+    this.audienceState = "showVoterIds";
+    this.voterIds = [1, 2, 3];
+    this.#syncAudience();
+  };
+
   #syncAudience = () => {
     this.#storage.setItem(
       "audience_state",
       JSON.stringify({
-        isVisible: this.isVisible,
-        isAnswered: this.activeQuestion?.isAnswered ?? false,
-        backgroundColor: this.backgroundColor,
-        options: this.activeQuestion?.options ?? [],
+        state: this.audienceState,
+        data: {
+          backgroundColor: this.backgroundColor,
+
+          options: this.activeQuestion.options,
+          isAnimated: this.activeQuestion.isAnimated,
+          optionsShown: this.activeQuestion.optionsShown,
+
+          summary: this.summary,
+          voterIds: this.voterIds,
+        },
       })
     );
   };

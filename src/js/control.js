@@ -122,7 +122,7 @@ publishQuestionButton.addEventListener("click", (event) => {
 
 summarizeButton.addEventListener("click", (event) => {
   event.preventDefault();
-  console.log(app.summarize());
+  app.publishSummary();
 });
 
 const publishButtons = document.querySelectorAll("[data-option-id]");

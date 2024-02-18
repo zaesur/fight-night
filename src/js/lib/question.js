@@ -42,15 +42,13 @@ export default class Question {
     this.isClosed = true;
   };
 
-  publish = async (optionId, formData) => {
+  publish = async (formData, optionId) => {
     this.isAnswered = true;
     if (!this.isClosed) {
       await this.close();
     }
 
-    for (const option of this.options) {
-      option.show = option.optionId === optionId;
-    }
+    this.optionsShown = [optionId];
   };
 
   publishAll = async (formData) => {
@@ -59,9 +57,7 @@ export default class Question {
       await this.close();
     }
 
-    for (const option of this.options) {
-      option.show = true;
-    }
+    this.optionsShown = this.options.map(({ optionId }) => optionId);
   };
 
   refresh = async () => {
