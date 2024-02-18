@@ -2,6 +2,7 @@ body,
 html {
   font-size: 24px;
   user-select: none;
+  text-transform: uppercase;
 }
 
 main {
@@ -17,23 +18,32 @@ main {
   width: 90%;
   height: 100%;
   display: flex;
-  /* align-items: center; */
+  align-items: center;
   justify-content: space-between;
 }
 
 .result {
   height: 100%;
   display: flex;
-  flex: 1 1 0;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
+  flex: 1 1 0;
+}
+
+.summary::before {
+  font-size: 0.625rem;
+  content: "the majority is";
+  vertical-align: super;
+}
+
+.summary {
+  text-align: center;
 }
 
 .option-label {
   font-size: 2.3rem;
   cursor: inherit;
-  text-transform: uppercase;
 }
 
 .force-down {

@@ -52,6 +52,10 @@ const renderResults = ({ options, isAnimated, optionsShown }) => {
 
 const renderSummary = ({ summary }) => {
   console.log(summary);
+  const element = document.createElement("div");
+  element.classList.add("summary");
+  element.textContent = summary;
+  resultsElement.replaceChildren(element);
 };
 
 const renderVoterIds = ({ voterIds }) => {

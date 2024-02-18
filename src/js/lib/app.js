@@ -92,12 +92,14 @@ export default class App {
   publishAllQuestion = async (formData) => {
     this.audienceState = "showResults";
     await this.activeQuestion.publishAll(formData);
+    this.activeQuestion.save();
     this.#syncAudience();
   };
 
   publishQuestion = async (optionId, formData) => {
     this.audienceState = "showResults";
     await this.activeQuestion.publish(formData, optionId);
+    this.activeQuestion.save();
     this.#syncAudience();
   };
 
@@ -140,7 +142,6 @@ export default class App {
     const leave = q18Majority === 1 ? "leave" : "stay";
 
     return `
-      The majority is:
       ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
       ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to ${leave}.
     `;
@@ -148,7 +149,7 @@ export default class App {
 
   publishSummary = () => {
     this.audienceState = "showSummary";
-    this.summary = "my summary";
+    this.summary = this.createSummary();
     this.#syncAudience();
   };
 

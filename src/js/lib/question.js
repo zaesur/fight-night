@@ -10,7 +10,6 @@ export default class Question {
   #storage;
 
   isClosed = true;
-  isAnswered = false;
 
   /**
    * Creates an instance of Question.
@@ -45,7 +44,6 @@ export default class Question {
   };
 
   publish = async (formData, optionId) => {
-    this.isAnswered = true;
     if (!this.isClosed) {
       await this.close();
     }
@@ -54,7 +52,6 @@ export default class Question {
   };
 
   publishAll = async (formData) => {
-    this.isAnswered = true;
     if (!this.isClosed) {
       await this.close();
     }
@@ -115,8 +112,10 @@ export default class Question {
   findMaxOptionByKeypadIds = (keypadIds) => {
     const filtered = this.rawResults.filter(({ keypadId }) => keypadIds.includes(keypadId));
     const sorted = this.sortResultsByOptionId(filtered);
-    const [max] = Object.entries(sorted).reduce(([max, votes], [optionId, keypadIds]) =>
-      keypadIds.length > max ? [parseInt(optionId), keypadIds] : [max, votes]
+    const [max] = Object.entries(sorted).reduce(
+      ([max, votes], [optionId, keypadIds]) =>
+        keypadIds.length > votes ? [parseInt(optionId), keypadIds.length] : [max, votes],
+      [-1, 0]
     );
     const option = this.findOptionById(max);
 
