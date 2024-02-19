@@ -141,6 +141,7 @@ for (const button of publishButtons) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.target.disabled = true;
+    window.clearInterval(interval);
 
     const optionId = parseInt(button.dataset.optionId);
     const formData = new FormData(resultsElement);
