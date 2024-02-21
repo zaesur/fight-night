@@ -1,4 +1,4 @@
-import { sortResultsByOptionId } from "./utils.js";
+import { roundPercentages, sortResultsByOptionId } from "./utils.js";
 
 /**
  * @typedef {import("./client.js").Client} Client
@@ -46,20 +46,12 @@ export default class Question {
     this.isClosed = true;
   };
 
-  publish = async (formData, optionId) => {
+  publish = async (optionId) => {
     if (!this.isClosed) {
       await this.close();
     }
 
-    this.optionsShown = [optionId];
-  };
-
-  publishAll = async (formData) => {
-    if (!this.isClosed) {
-      await this.close();
-    }
-
-    this.optionsShown = this.options.map(({ optionId }) => optionId);
+    this.optionsShown = optionId ? [optionId] : this.options.map(({ optionId }) => optionId);
   };
 
   refresh = async () => {
@@ -70,6 +62,13 @@ export default class Question {
   save = () => {
     this.#storage.setItem("active_question", this.questionId);
     this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
+  };
+
+  setVotes = (formData) => {
+    for (const [optionId, votes] of [...formData.entries()]) {
+      const option = this.findOptionById(parseInt(optionId));
+      option.votes = parseInt(votes);
+    }
   };
 
   /**
@@ -86,13 +85,20 @@ export default class Question {
       const keypadIds = buckets[option.optionId] ?? [];
       option.keypadIds = keypadIds;
       option.votes = keypadIds.length;
-      option.percentage = (keypadIds.length / results.length) * 100;
     }
 
     this.rawResults = results;
   };
 
-  processForm = (formData) => {};
+  calculatePercentages = () => {
+    const total = this.options.reduce((acc, { votes }) => acc + votes, 0);
+    const unrounded = this.options.map(({ votes }) => (votes / total) * 100);
+    const rounded = roundPercentages(unrounded);
+
+    for (const [index, option] of Object.entries(this.options)) {
+      option.percentage = rounded[index];
+    }
+  };
 
   /**
    * Retrieves an option by its ID.

@@ -35,8 +35,8 @@ export default class App {
     this.#syncAudience();
   };
 
-  startHardware = async (number) => {
-    await this.#client.startHardware(1, parseInt(number) + 1);
+  startHardware = async (minKeypadId, maxKeypadId) => {
+    await this.#client.startHardware(minKeypadId, maxKeypadId);
   };
 
   stopHardware = async () => {
@@ -60,10 +60,12 @@ export default class App {
    * @memberof App
    */
   startQuestion = async (formData) => {
+    const question = this.#factory.fromForm(formData);
+    await question.start();
+
     this.audienceState = "showOptions";
-    this.activeQuestion = this.#factory.fromForm(formData);
-    this.questions.push(this.activeQuestion);
-    await this.activeQuestion.start();
+    this.activeQuestion = question;
+    this.questions.push(question);
     this.activeQuestion.save();
     this.#syncAudience();
   };
@@ -82,16 +84,11 @@ export default class App {
    * @param { FormData } formData a form containing possibly overridden votes
    * @memberof App
    */
-  publishAllQuestion = async (formData) => {
+  publishQuestion = async (formData, optionId) => {
     this.audienceState = "showResults";
-    await this.activeQuestion.publishAll(formData);
-    this.activeQuestion.save();
-    this.#syncAudience();
-  };
-
-  publishQuestion = async (optionId, formData) => {
-    this.audienceState = "showResults";
-    await this.activeQuestion.publish(formData, optionId);
+    this.activeQuestion.setVotes(formData);
+    this.activeQuestion.calculatePercentages();
+    await this.activeQuestion.publish(optionId);
     this.activeQuestion.save();
     this.#syncAudience();
   };
@@ -154,7 +151,7 @@ export default class App {
     this.audienceState = "showVoterIds";
 
     const q18 = this.findQuestionById(18);
-    const q18KeypadIds = q18.rawResults.map(({ keypadId }) => keypadId);
+    const q18KeypadIds = q18?.rawResults?.map(({ keypadId }) => keypadId) ?? [];
     const activeKeypadIds = await this.getActiveKeypadIds();
     const nonVoters = activeKeypadIds.filter((keypadId) => !q18KeypadIds.includes(keypadId));
 

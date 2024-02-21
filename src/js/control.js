@@ -21,7 +21,6 @@ const summarizeButton = document.getElementById("summarize");
 const novoteButton = document.getElementById("show-novote");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
-const countInput = document.getElementById("voter-count");
 
 const resetError = () => {
   errorElement.textContent = "";
@@ -56,14 +55,15 @@ resultsElement.dispatchEvent(new Event("input"));
 startHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
-  const count = countInput.value;
 
   app
-    .startHardware(count)
+    .startHardware(
+      parseInt(document.getElementById("min-keypad-id").value),
+      parseInt(document.getElementById("max-keypad-id").value) + 1
+    )
     .then(resetError)
     .catch(showError)
     .finally(() => {
-      countInput.focus();
       event.target.disabled = false;
     });
 });
@@ -107,7 +107,7 @@ publishQuestionButton.addEventListener("click", (event) => {
   const formData = new FormData(resultsElement);
 
   app
-    .publishAllQuestion(formData)
+    .publishQuestion(formData)
     .then(() => {
       resetError();
       window.clearInterval(interval);
@@ -158,7 +158,7 @@ for (const button of publishButtons) {
     const formData = new FormData(resultsElement);
 
     app
-      .publishQuestion(optionId, formData)
+      .publishQuestion(formData, optionId)
       .then(resetError)
       .catch(showError)
       .finally(() => {
@@ -226,7 +226,7 @@ const nodes = config.questions.map(({ id, question, answers, activeOptions }) =>
       })
       .catch(showError)
       .finally(() => {
-        event.target.disabled = true;
+        event.target.disabled = false;
       });
   });
 
