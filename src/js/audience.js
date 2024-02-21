@@ -18,7 +18,7 @@ const renderOptions = ({ options }) => {
     clone.querySelector("svg").style.display = "none";
     clone.querySelector("[data-id='percentage']").style.display = "none";
 
-    const label = String.fromCodePoint(0x245f + optionId);
+    const label = String.fromCodePoint("①".codePointAt(0) + optionId - 1);
     clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
 
     return clone;
@@ -79,7 +79,7 @@ const render = (state, data) => {
     "showVoterIds": renderVoterIds,
   };
 
-  map[state](data);
+  map[state]?.(data);
 };
 
 // Since renderAudience is deterministic we can render on every event.
@@ -105,5 +105,7 @@ document.addEventListener("fullscreenchange", () => {
 });
 
 // Initialize on first load.
-const { state, data } = JSON.parse(window.localStorage.getItem("audience_state"));
-render(state, data);
+if ("audience_state" in localStorage) {
+  const { state, data } = JSON.parse(window.localStorage.getItem("audience_state"));
+  render(state, data);
+}

@@ -1,3 +1,5 @@
+import { sortResultsByOptionId } from "./utils.js";
+
 /**
  * @typedef {import("./client.js").Client} Client
  * @typedef {{ optionName: str, optionId: number, options: Option }} QuestionJSON
@@ -9,6 +11,7 @@ export default class Question {
   #client;
   #storage;
 
+  rawResults = [];
   isClosed = true;
 
   /**
@@ -69,18 +72,6 @@ export default class Question {
     this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
   };
 
-  sortResultsByOptionId = (results) => {
-    return results.reduce((acc, { keypadId, options: [optionId] }) => {
-      if (acc?.[optionId]) {
-        acc[optionId].push(keypadId);
-      } else {
-        acc[optionId] = [keypadId];
-      }
-
-      return acc;
-    }, {});
-  };
-
   /**
    * Process incoming results from the hardware.
    * @param { HardwareResult[] } results
@@ -88,7 +79,7 @@ export default class Question {
    */
   processResults = (results) => {
     // Gather the results by optionId in a dictionary.
-    const buckets = this.sortResultsByOptionId(results);
+    const buckets = sortResultsByOptionId(results);
 
     // Save the results.
     for (const option of this.options) {
@@ -101,17 +92,38 @@ export default class Question {
     this.rawResults = results;
   };
 
+  processForm = (formData) => {};
+
+  /**
+   * Retrieves an option by its ID.
+   * @param { number } id
+   * @returns { Option | undefined }
+   * @memberof Question
+   */
   findOptionById = (id) => this.options.find(({ optionId }) => optionId === id);
 
-  findKeypadIdsByOptionIds = (optionIds) => {
+  /**
+   * Filters all the raw results to retrieve keypadIds who voted for
+   * options included in optionIds.
+   * @param { number[] } optionIds
+   * @returns { number[] } A list of keypad IDs or undefined
+   * @memberof Question
+   */
+  filterKeypadIdsByVote = (optionIds) => {
     return this.rawResults
       .filter(({ options: [optionId] }) => optionIds.includes(optionId))
       .map(({ keypadId }) => keypadId);
   };
 
+  /**
+   * Finds the majority option based on a subset of keypad IDs.
+   * @param { number[] } keypadIds
+   * @returns { Option | undefined }
+   * @memberof Question
+   */
   findMaxOptionByKeypadIds = (keypadIds) => {
     const filtered = this.rawResults.filter(({ keypadId }) => keypadIds.includes(keypadId));
-    const sorted = this.sortResultsByOptionId(filtered);
+    const sorted = sortResultsByOptionId(filtered);
     const [max] = Object.entries(sorted).reduce(
       ([max, votes], [optionId, keypadIds]) =>
         keypadIds.length > votes ? [parseInt(optionId), keypadIds.length] : [max, votes],

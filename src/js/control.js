@@ -23,25 +23,17 @@ const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const countInput = document.getElementById("voter-count");
 
-const handlePromise = (promise, { onSuccess, onFail, onFinished }) => {
-  promise
-    .then((...args) => {
-      errorElement.textContent = "";
-      onSuccess?.(...args);
-    })
-    .catch((error) => {
-      if (error instanceof ClientError) {
-        const message = `${error.message}: ${error.reason}`;
-        errorElement.textContent = message;
-      } else {
-        throw error;
-      }
+const resetError = () => {
+  errorElement.textContent = "";
+};
 
-      onFail?.();
-    })
-    .finally(() => {
-      onFinished?.();
-    });
+const showError = (error) => {
+  if (error instanceof ClientError) {
+    const message = `${error.message}: ${error.reason}`;
+    errorElement.textContent = message;
+  } else {
+    throw error;
+  }
 };
 
 resultsElement.addEventListener("input", () => {
@@ -64,14 +56,16 @@ resultsElement.dispatchEvent(new Event("input"));
 startHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
-
   const count = countInput.value;
-  handlePromise(app.startHardware(count), {
-    onFinished: () => {
-      event.target.disabled = false;
+
+  app
+    .startHardware(count)
+    .then(resetError)
+    .catch(showError)
+    .finally(() => {
       countInput.focus();
-    },
-  });
+      event.target.disabled = false;
+    });
 });
 
 // On stop hardware input.
@@ -79,11 +73,13 @@ stopHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(app.stopHardware(), {
-    onFinished: () => {
+  app
+    .stopHardware()
+    .then(resetError)
+    .catch(showError)
+    .finally(() => {
       event.target.disabled = false;
-    },
-  });
+    });
 });
 
 // On stop question input.
@@ -91,14 +87,16 @@ stopQuestionButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  handlePromise(app.stopQuestion(), {
-    onSuccess: () => {
+  app
+    .stopQuestion()
+    .then(() => {
+      resetError();
       window.clearInterval(interval);
-    },
-    onFinished: () => {
+    })
+    .catch(showError)
+    .finally(() => {
       event.target.disabled = false;
-    },
-  });
+    });
 });
 
 // On publish question input.
@@ -108,32 +106,45 @@ publishQuestionButton.addEventListener("click", (event) => {
 
   const formData = new FormData(resultsElement);
 
-  handlePromise(app.publishAllQuestion(formData), {
-    onSuccess: () => {
+  app
+    .publishAllQuestion(formData)
+    .then(() => {
+      resetError();
       window.clearInterval(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
       resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
       resultsElement.dispatchEvent(new Event("input"));
-    },
-    onFinished: () => {
+    })
+    .catch(showError)
+    .finally(() => {
       event.target.disabled = false;
-    },
-  });
+    });
 });
 
 summarizeButton.addEventListener("click", (event) => {
   event.preventDefault();
-  app.publishSummary();
+  event.target.disabled = true;
+
+  app
+    .publishSummary()
+    .then(resetError)
+    .catch(showError)
+    .finally(() => {
+      event.target.disabled = false;
+    });
 });
 
 novoteButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
-  handlePromise(app.publishVoterIds(), {
-    onFinished: () => {
+
+  app
+    .publishVoterIds()
+    .then(resetError)
+    .catch(showError)
+    .finally(() => {
       event.target.disabled = false;
-    },
-  });
+    });
 });
 
 const publishButtons = document.querySelectorAll("[data-option-id]");
@@ -146,11 +157,13 @@ for (const button of publishButtons) {
     const optionId = parseInt(button.dataset.optionId);
     const formData = new FormData(resultsElement);
 
-    handlePromise(app.publishQuestion(optionId, formData), {
-      onFinished: () => {
+    app
+      .publishQuestion(optionId, formData)
+      .then(resetError)
+      .catch(showError)
+      .finally(() => {
         event.target.disabled = false;
-      },
-    });
+      });
   });
 }
 
@@ -193,8 +206,9 @@ const nodes = config.questions.map(({ id, question, answers, activeOptions }) =>
     formData.append("questionId", id);
     formData.append("activeOptions", activeOptions);
 
-    handlePromise(app.startQuestion(formData), {
-      onSuccess: () => {
+    app
+      .startQuestion(formData)
+      .then(() => {
         resultsLabelElement.textContent = app.getActiveQuestionName();
 
         const refresh = () => {
@@ -209,11 +223,11 @@ const nodes = config.questions.map(({ id, question, answers, activeOptions }) =>
 
         refresh();
         interval = window.setInterval(refresh, intervalTimeout);
-      },
-      onFinished: () => {
-        event.target.disabled = false;
-      },
-    });
+      })
+      .catch(showError)
+      .finally(() => {
+        event.target.disabled = true;
+      });
   });
 
   return clone;
