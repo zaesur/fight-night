@@ -14,8 +14,8 @@
         <form>
           <fieldset>
             <legend>Hardware</legend>
-            <label for="count">Number of voters:</label>
-            <input id="voter-count" name="count" type="number" placeholder="50" min="1" />
+            <input id="min-keypad-id" name="min" type="number" placeholder="min ID" min="1" />
+            <input id="max-keypad-id" name="max" type="number" placeholder="max ID" min="1" />
             <button id="start-hardware">Start hardware</button>
             <button id="stop-hardware">Stop hardware</button>
           </fieldset>
@@ -63,8 +63,13 @@
             <div class="results-buttons">
               <button id="stop-question">Close voting</button>
               <button id="publish-question">Publish results</button>
-              <button id="summarize">Publish summary</button>
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Etc</legend>
+            <button id="summarize">Publish summary</button>
+            <button id="show-novote">Publish novote</button>
           </fieldset>
 
           <fieldset>

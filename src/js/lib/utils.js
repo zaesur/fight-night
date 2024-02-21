@@ -6,3 +6,15 @@ export const roundPercentages = (percentagesToRound) => {
 
   return roundedPercentages;
 };
+
+export const sortResultsByOptionId = (results) => {
+  return results.reduce((acc, { keypadId, options: [optionId] }) => {
+    if (acc?.[optionId]) {
+      acc[optionId].push(keypadId);
+    } else {
+      acc[optionId] = [keypadId];
+    }
+
+    return acc;
+  }, {});
+};

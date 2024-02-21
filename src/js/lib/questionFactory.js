@@ -9,6 +9,11 @@ export default class QuestionFactory {
     this.#storage = storage;
   }
 
+  /**
+   * Load active question and questions from storage.
+   * @returns { [Question | undefined, Questions[]]}
+   * @memberof QuestionFactory
+   */
   loadAll = () => {
     const questions = Object.entries(this.#storage)
       .filter(([storageKey]) => storageKey.startsWith("question"))
