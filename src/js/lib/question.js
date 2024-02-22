@@ -67,7 +67,10 @@ export default class Question {
   setVotes = (formData) => {
     for (const [optionId, votes] of [...formData.entries()]) {
       const option = this.findOptionById(parseInt(optionId));
-      option.votes = parseInt(votes);
+
+      if (option) {
+        option.votes = parseInt(votes);
+      }
     }
   };
 
