@@ -182,7 +182,7 @@ const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, answers, activeOptions }) => {
+const nodes = config.questions.map(({ id, question, options, activeOptions, isAnimated, showQuestion }) => {
   const clone = document.importNode(templateElement, true);
   const form = clone.querySelector("form");
   const legend = clone.querySelector("legend");
@@ -190,10 +190,14 @@ const nodes = config.questions.map(({ id, question, answers, activeOptions }) =>
   const button = clone.querySelector("button");
 
   legend.textContent = `${id}: ${question}`;
-  for (const [i, answer] of answers.entries()) {
-    const input = inputs[i];
-    if (answer) {
-      input.value = answer;
+  for (const input of inputs) {
+    const optionId = input.dataset.optionId;
+    const option = options[optionId];
+
+    if (option) {
+      input.value = option;
+    } else {
+      input.parentElement.style.display = "none";
     }
   }
 
@@ -202,9 +206,11 @@ const nodes = config.questions.map(({ id, question, answers, activeOptions }) =>
     event.target.disabled = true;
 
     const formData = new FormData(form);
-    formData.append("questionName", question);
-    formData.append("questionId", id);
+    formData.append("question", question);
+    formData.append("id", id);
     formData.append("activeOptions", activeOptions);
+    formData.append("isAnimated", isAnimated);
+    formData.append("showQuestion", showQuestion);
 
     app
       .startQuestion(formData)

@@ -22,7 +22,7 @@ export default class Question {
    * @param { Option[] } options
    * @memberof Question
    */
-  constructor(client, storage, questionId, questionName, options, activeOptions, rawResults) {
+  constructor(client, storage, questionId, questionName, options, activeOptions, rawResults, isAnimated) {
     this.#client = client;
     this.#storage = storage;
 
@@ -31,8 +31,7 @@ export default class Question {
     this.options = options;
     this.activeOptions = activeOptions;
     this.rawResults = rawResults;
-
-    this.isAnimated = [5, 6, 14, 15, 16, 17].includes(questionId);
+    this.isAnimated = isAnimated;
   }
 
   start = async () => {
@@ -158,5 +157,6 @@ export default class Question {
     options: this.options,
     activeOptions: this.activeOptions,
     rawResults: this.rawResults,
+    isAnimated: this.isAnimated,
   });
 }
