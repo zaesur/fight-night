@@ -51,7 +51,9 @@ export default class Question {
       await this.close();
     }
 
-    this.optionsShown = optionId ? [optionId] : this.options.map(({ optionId }) => optionId);
+    this.optionsShown = optionId
+      ? [...(this.optionsShown ?? []), optionId]
+      : this.options.map(({ optionId }) => optionId);
   };
 
   refresh = async () => {
