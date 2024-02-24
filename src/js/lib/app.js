@@ -1,4 +1,3 @@
-import Question from "./question.js";
 import QuestionFactory from "./questionFactory.js";
 /**
  * @typedef {import("./client.js").Client} Client
@@ -116,7 +115,6 @@ export default class App {
     const q4Majority = q4?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionName: "2500-4000" };
     const q8Majority = q8?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 3 }; // Default: atheist
     const q10Majority = q10?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 4 }; // Default: no bias
-    const q18Majority = q18?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 2 }; // Default: stay
 
     const religion =
       q8Majority.optionId === 1 ? "A religious" : q8Majority.optionId === 2 ? "A spiritual" : "An atheist";
@@ -133,11 +131,11 @@ export default class App {
             ? "a little bit violent"
             : "neither racist, sexist nor violent";
     const ticket = q1Majority.optionId === 1 ? "paid" : "did not pay";
-    const leave = q18Majority.optionId === 1 ? "leave" : "stay";
 
     return `
+      The majority is
       ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
-      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to ${leave}.
+      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to leave.
     `;
   };
 
