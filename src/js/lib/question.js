@@ -17,21 +17,30 @@ export default class Question {
   /**
    * Creates an instance of Question.
    * @param { Client } client
-   * @param { number } questionId
-   * @param { str } questionName
+   * @param { number } id
+   * @param { str } name
    * @param { Option[] } options
    * @memberof Question
    */
-  constructor(client, storage, questionId, questionName, options, activeOptions, rawResults, isAnimated) {
+  constructor(
+    client,
+    storage,
+    id,
+    name,
+    options,
+    activeOptions,
+    { rawResults = [], isAnimated = false, show = false }
+  ) {
     this.#client = client;
     this.#storage = storage;
 
-    this.questionId = questionId;
-    this.questionName = questionName;
+    this.id = id;
+    this.name = name;
     this.options = options;
     this.activeOptions = activeOptions;
     this.rawResults = rawResults;
     this.isAnimated = isAnimated;
+    this.show = show;
   }
 
   start = async () => {
@@ -61,8 +70,8 @@ export default class Question {
   };
 
   save = () => {
-    this.#storage.setItem("active_question", this.questionId);
-    this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
+    this.#storage.setItem("active_question", this.id);
+    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
   };
 
   setVotes = (formData) => {
@@ -152,11 +161,12 @@ export default class Question {
    * @memberof Question
    */
   toJSON = () => ({
-    questionId: this.questionId,
-    questionName: this.questionName,
+    id: this.id,
+    name: this.name,
     options: this.options,
     activeOptions: this.activeOptions,
     rawResults: this.rawResults,
     isAnimated: this.isAnimated,
+    show: this.show,
   });
 }

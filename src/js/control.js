@@ -182,7 +182,7 @@ const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, options, activeOptions, isAnimated, showQuestion }) => {
+const nodes = config.questions.map(({ id, question, options, activeOptions, isAnimated, show }) => {
   const clone = document.importNode(templateElement, true);
   const form = clone.querySelector("form");
   const legend = clone.querySelector("legend");
@@ -210,7 +210,7 @@ const nodes = config.questions.map(({ id, question, options, activeOptions, isAn
     formData.append("id", id);
     formData.append("activeOptions", activeOptions);
     formData.append("isAnimated", isAnimated);
-    formData.append("showQuestion", showQuestion);
+    formData.append("show", show);
 
     app
       .startQuestion(formData)

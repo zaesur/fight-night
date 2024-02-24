@@ -20,7 +20,7 @@ export default class QuestionFactory {
       .map(([_, value]) => this.fromJSON(JSON.parse(value)));
 
     const activeQuestionId = parseInt(this.#storage.getItem("active_question"));
-    const activeQuestion = questions.find(({ questionId }) => questionId === activeQuestionId);
+    const activeQuestion = questions.find(({ id }) => id === activeQuestionId);
 
     return [activeQuestion, questions];
   };
@@ -32,17 +32,12 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ questionId, questionName, options, activeOptions, rawResults, isAnimated }) => {
-    return new Question(
-      this.#client,
-      this.#storage,
-      questionId,
-      questionName,
-      options,
-      activeOptions,
+  fromJSON = ({ questionId, questionName, options, activeOptions, rawResults, isAnimated, showQuestion }) => {
+    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions, {
       rawResults,
-      isAnimated
-    );
+      isAnimated,
+      showQuestion,
+    });
   };
 
   /**
@@ -56,13 +51,17 @@ export default class QuestionFactory {
     const id = parseInt(formData.get("id"));
     const question = formData.get("question");
     const activeOptions = parseInt(formData.get("activeOptions"));
-    const isAnimated = Boolean(formData.get("isAnimated"));
+    const isAnimated = formData.get("isAnimated") !== "undefined";
+    const show = formData.get("show") !== "undefined";
 
     const options = formData
       .getAll("option")
       .map((optionName, index) => ({ optionId: index + 1, optionName }))
       .filter(({ optionName }) => Boolean(optionName));
 
-    return new Question(this.#client, this.#storage, id, question, options, activeOptions, isAnimated);
+    return new Question(this.#client, this.#storage, id, question, options, activeOptions, {
+      isAnimated,
+      show,
+    });
   };
 }

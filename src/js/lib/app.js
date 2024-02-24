@@ -26,7 +26,7 @@ export default class App {
     [this.activeQuestion, this.questions] = this.#factory.loadAll();
   }
 
-  getActiveQuestionName = () => this.activeQuestion?.questionName ?? "No question active";
+  getActiveQuestionName = () => this.activeQuestion?.name ?? "No question active";
 
   setBackgroundColor = (color) => {
     this.audienceState = "showBlank";
@@ -92,8 +92,8 @@ export default class App {
     this.#syncAudience();
   };
 
-  findQuestionById = (id) => {
-    return this.questions.find(({ questionId }) => questionId === id);
+  findQuestionById = (questionId) => {
+    return this.questions.find(({ id }) => questionId === id);
   };
 
   createSummary = async () => {
@@ -165,9 +165,11 @@ export default class App {
         data: {
           backgroundColor: this.backgroundColor,
 
+          question: this.activeQuestion?.name,
           options: this.activeQuestion?.options,
           isAnimated: this.activeQuestion?.isAnimated,
           optionsShown: this.activeQuestion?.optionsShown,
+          showQuestion: this.activeQuestion?.show,
 
           summary: this.summary,
           voterIds: this.voterIds,

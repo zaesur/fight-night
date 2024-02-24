@@ -90,7 +90,7 @@ export default Object.freeze({
       "options": { 1: "Aurélie", 2: "Eva", 3: "Julia" },
       "activeOptions": 3,
       "isAnimated": true,
-      "showQuestion": true,
+      "show": true,
     },
     {
       "id": 14,

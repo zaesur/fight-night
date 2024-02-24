@@ -1,15 +1,19 @@
 const templateElement = document.querySelector("template");
 const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
+const questionElement = document.getElementById("question");
 
 const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = "hidden";
 };
 
-const renderOptions = ({ options }) => {
+const renderOptions = ({ options, showQuestion, question }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+
+  questionElement.textContent = question;
+  questionElement.style.visibility = showQuestion ? "inherit" : "hidden";
 
   const renderOption = ({ optionId, optionName }) => {
     const clone = document.importNode(templateElement.content, true);
@@ -30,6 +34,7 @@ const renderOptions = ({ options }) => {
 const renderResults = ({ options, isAnimated, optionsShown }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const renderResult = ({ optionName, optionId, percentage }) => {
     const clone = document.importNode(templateElement.content, true);
@@ -53,6 +58,7 @@ const renderResults = ({ options, isAnimated, optionsShown }) => {
 const renderSummary = ({ summary }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const element = document.createElement("div");
   element.classList.add("summary");
@@ -63,6 +69,7 @@ const renderSummary = ({ summary }) => {
 const renderVoterIds = ({ voterIds }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const element = document.createElement("div");
   element.classList.add("novote");
