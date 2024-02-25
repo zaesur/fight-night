@@ -1,11 +1,27 @@
 /**
+ * Config for the application.
+ * id: the id of the question.
+ * question: the question formulation.
+ * options: the option ids along with their labels.
+ * activeOptions: the number of option ids to activate.
+ * isAnimated: if true, the question results should be animated.
+ * showOnlyOptionId: if true, the option labels will be hidden.
+ * showQuestion: if true, the question formulation will be shown.
+ *
  * @exports
- * @typedef {{ id: number, question: str, answers: str[, activeOptions: number] }} Question
+ * @typedef {{
+ *  id: number,
+ *  question: str,
+ *  options: Object.<number, str>,
+ *  activeOptions: number,
+ *  isAnimated?: true,
+ *  showOnlyOptionId?: true,
+ *  showQuestion?: true
+ * }} Question
  * @typedef {{ apiUrl: str, questions: Question[] }} Config
  * @type { Config }
  */
 export default Object.freeze({
-  // Could be window.location in production, if served from the same server.
   // "apiUrl": "http://localhost:3000",
   "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
   "questions": [
