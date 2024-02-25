@@ -10,14 +10,6 @@ main {
   justify-content: center;
 }
 
-fieldset {
-  font-size: 0.5rem;
-}
-
-legend {
-  font-size: 1rem;
-}
-
 .column {
   display: flex;
   flex-direction: column;
