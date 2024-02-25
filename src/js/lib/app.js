@@ -34,6 +34,12 @@ export default class App {
     this.#syncAudience();
   };
 
+  pollHardware = async () => {
+    const response = await this.#client.getState();
+
+    return Boolean(response.result["hardware_state"]);
+  };
+
   startHardware = async (minKeypadId, maxKeypadId) => {
     await this.#client.startHardware(minKeypadId, maxKeypadId);
   };

@@ -9,6 +9,7 @@ const intervalTimeout = 5000;
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
+const statusElement = document.getElementById("status");
 const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
 const inputs = resultsElement.querySelectorAll("input");
@@ -21,6 +22,8 @@ const summarizeButton = document.getElementById("summarize");
 const novoteButton = document.getElementById("show-novote");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
+const keypadMinField = document.getElementById("min-keypad-id");
+const keypadMaxField = document.getElementById("max-keypad-id");
 
 const resetError = () => {
   errorElement.textContent = "";
@@ -33,6 +36,34 @@ const showError = (error) => {
   } else {
     throw error;
   }
+};
+
+const pollHardware = () => {
+  statusElement.classList.remove("active", "inactive");
+
+  app
+    .pollHardware()
+    .then((hardwareActive) => {
+      if (hardwareActive) {
+        statusElement.classList.add("active");
+        startHardwareButton.disabled = true;
+        stopHardwareButton.disabled = false;
+        keypadMinField.disabled = true;
+        keypadMaxField.disabled = true;
+      } else {
+        statusElement.classList.add("inactive");
+        startHardwareButton.disabled = false;
+        stopHardwareButton.disabled = true;
+        keypadMinField.disabled = false;
+        keypadMaxField.disabled = false;
+      }
+    })
+    .catch(() => {
+      startHardwareButton.disabled = true;
+      stopHardwareButton.disabled = true;
+      keypadMinField.disabled = false;
+      keypadMaxField.disabled = false;
+    });
 };
 
 resultsElement.addEventListener("input", () => {
@@ -57,15 +88,10 @@ startHardwareButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   app
-    .startHardware(
-      parseInt(document.getElementById("min-keypad-id").value),
-      parseInt(document.getElementById("max-keypad-id").value) + 1
-    )
+    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value) + 1)
+    .then(pollHardware)
     .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
+    .catch(showError);
 });
 
 // On stop hardware input.
@@ -73,13 +99,7 @@ stopHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  app
-    .stopHardware()
-    .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
+  app.stopHardware().then(pollHardware).then(resetError).catch(showError);
 });
 
 // On stop question input.
@@ -243,3 +263,5 @@ const nodes = config.questions.map(
 );
 
 questionsElement.replaceChildren(...nodes);
+window.setInterval(pollHardware, intervalTimeout);
+pollHardware();
