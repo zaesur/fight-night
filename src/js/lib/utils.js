@@ -18,3 +18,31 @@ export const sortResultsByOptionId = (results) => {
     return acc;
   }, {});
 };
+
+export const exportToCSV = () => {
+  const questions = [];
+
+  Object.values(localStorage).forEach((value) => {
+    const { id, rawResults } = JSON.parse(value);
+
+    if (id) {
+      const answers = [];
+
+      for (const {
+        keypadId,
+        options: [optionId],
+      } of rawResults) {
+        answers[parseInt(keypadId)] = optionId;
+      }
+
+      questions[id - 1] = answers;
+    }
+  });
+
+  const csvContent = questions.map((e) => e.join(",")).join("\n");
+  const csvFile = `data:text/csv;charset=utf-8,${csvContent}`;
+
+  //download file as csv
+  const encodedUri = encodeURI(csvFile);
+  window.open(encodedUri);
+};

@@ -1,7 +1,7 @@
 import config from "../config.js";
 import App from "./lib/app.js";
 import Client, { ClientError } from "./lib/client.js";
-import { roundPercentages } from "./lib/utils.js";
+import { roundPercentages, exportToCSV } from "./lib/utils.js";
 
 let interval;
 const intervalTimeout = 5000;
@@ -22,6 +22,7 @@ const summarizeButton = document.getElementById("summarize");
 const novoteButton = document.getElementById("show-novote");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
+const exportButton = document.getElementById("export");
 const keypadMinField = document.getElementById("min-keypad-id");
 const keypadMaxField = document.getElementById("max-keypad-id");
 
@@ -195,6 +196,11 @@ whiteButton.addEventListener("click", (event) => {
 blackButton.addEventListener("click", (event) => {
   event.preventDefault();
   app.setBackgroundColor("black");
+});
+
+exportButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  exportToCSV();
 });
 
 const questionsElement = document.getElementById("questions");
