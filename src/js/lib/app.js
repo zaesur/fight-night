@@ -97,6 +97,16 @@ export default class App {
   };
 
   createSummary = async () => {
+    const getMiddle = (str) => {
+      if (str.includes("-")) {
+        const [start, end] = str.split("-").map((n) => parseInt(n));
+        const middle = Math.floor((start + end) / 2);
+
+        return String(middle);
+      } else {
+        return str;
+      }
+    };
     const q1 = this.findQuestionById(1);
     const q2 = this.findQuestionById(2);
     const q3 = this.findQuestionById(3);
@@ -119,8 +129,8 @@ export default class App {
     const religion =
       q8Majority.optionId === 1 ? "A religious" : q8Majority.optionId === 2 ? "A spiritual" : "An atheist";
     const gender = q2Majority.optionId === 1 ? "woman" : q2Majority.optionId === 2 ? "man" : "person";
-    const age = q3Majority.optionName;
-    const salary = q4Majority.optionName;
+    const age = getMiddle(q3Majority.optionName);
+    const salary = getMiddle(q4Majority.optionName);
     const pronoun = q2Majority.optionId === 1 ? "She is" : q2Majority.optionId === 2 ? "He is" : "They are";
     const bias =
       q10Majority.optionId === 1

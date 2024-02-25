@@ -9,7 +9,7 @@ const resizeVoterIds = () => {
   const element = document.querySelector(".novote");
 
   // Make sure the voter IDs never exceed the container
-  let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize);
+  let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
   element.style.fontSize = fontSize + "px";
 
   while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
@@ -111,7 +111,7 @@ const render = (state, data) => {
 
 window.addEventListener("resize", resizeVoterIds);
 
-// Since renderAudience is deterministic we can render on every event.
+// Since render is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {
   if (event.newValue && event.key === "audience_state") {
     const { state, data } = JSON.parse(event.newValue);
