@@ -1,15 +1,33 @@
 const templateElement = document.querySelector("template");
 const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
+const questionElement = document.getElementById("question");
+
+const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+
+const resizeVoterIds = () => {
+  const element = document.querySelector(".novote");
+
+  // Make sure the voter IDs never exceed the container
+  let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
+  element.style.fontSize = fontSize + "px";
+
+  while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
+    element.style.fontSize = --fontSize + "px";
+  }
+};
 
 const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = "hidden";
 };
 
-const renderOptions = ({ options }) => {
+const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+
+  questionElement.textContent = question;
+  questionElement.style.visibility = showQuestion ? "inherit" : "hidden";
 
   const renderOption = ({ optionId, optionName }) => {
     const clone = document.importNode(templateElement.content, true);
@@ -18,8 +36,9 @@ const renderOptions = ({ options }) => {
     clone.querySelector("svg").style.display = "none";
     clone.querySelector("[data-id='percentage']").style.display = "none";
 
-    const label = String.fromCodePoint("①".codePointAt(0) + optionId - 1);
-    clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
+    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
+      ? getUnicodeForOptionId(optionId)
+      : `${getUnicodeForOptionId(optionId)} ${optionName}`;
 
     return clone;
   };
@@ -27,17 +46,21 @@ const renderOptions = ({ options }) => {
   resultsElement.replaceChildren(...options.map(renderOption));
 };
 
-const renderResults = ({ options, isAnimated, optionsShown }) => {
+const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const renderResult = ({ optionName, optionId, percentage }) => {
+    const isAnimated = optionsAnimated.includes(optionId);
     const clone = document.importNode(templateElement.content, true);
     const svg = clone.querySelector("svg");
 
     clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
 
-    clone.querySelector("[data-id='optionName']").textContent = optionName;
+    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
+      ? getUnicodeForOptionId(optionId)
+      : optionName;
     clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
 
     // Animate SVG
@@ -53,6 +76,7 @@ const renderResults = ({ options, isAnimated, optionsShown }) => {
 const renderSummary = ({ summary }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const element = document.createElement("div");
   element.classList.add("summary");
@@ -63,11 +87,14 @@ const renderSummary = ({ summary }) => {
 const renderVoterIds = ({ voterIds }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
+  questionElement.style.visibility = "hidden";
 
   const element = document.createElement("div");
   element.classList.add("novote");
   element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
   resultsElement.replaceChildren(element);
+
+  resizeVoterIds();
 };
 
 const render = (state, data) => {
@@ -82,7 +109,9 @@ const render = (state, data) => {
   map[state]?.(data);
 };
 
-// Since renderAudience is deterministic we can render on every event.
+window.addEventListener("resize", resizeVoterIds);
+
+// Since render is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {
   if (event.newValue && event.key === "audience_state") {
     const { state, data } = JSON.parse(event.newValue);

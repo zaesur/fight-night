@@ -1,4 +1,3 @@
-import Question from "./question.js";
 import QuestionFactory from "./questionFactory.js";
 /**
  * @typedef {import("./client.js").Client} Client
@@ -27,12 +26,18 @@ export default class App {
     [this.activeQuestion, this.questions] = this.#factory.loadAll();
   }
 
-  getActiveQuestionName = () => this.activeQuestion?.questionName ?? "No question active";
+  getActiveQuestionName = () => this.activeQuestion?.name ?? "No question active";
 
   setBackgroundColor = (color) => {
     this.audienceState = "showBlank";
     this.backgroundColor = color;
     this.#syncAudience();
+  };
+
+  pollHardware = async () => {
+    const response = await this.#client.getState();
+
+    return Boolean(response.result["hardware_state"]);
   };
 
   startHardware = async (minKeypadId, maxKeypadId) => {
@@ -93,11 +98,21 @@ export default class App {
     this.#syncAudience();
   };
 
-  findQuestionById = (id) => {
-    return this.questions.find(({ questionId }) => questionId === id);
+  findQuestionById = (questionId) => {
+    return this.questions.find(({ id }) => questionId === id);
   };
 
   createSummary = async () => {
+    const getMiddle = (str) => {
+      if (str.includes("-")) {
+        const [start, end] = str.split("-").map((n) => parseInt(n));
+        const middle = Math.floor((start + end) / 2);
+
+        return String(middle);
+      } else {
+        return str;
+      }
+    };
     const q1 = this.findQuestionById(1);
     const q2 = this.findQuestionById(2);
     const q3 = this.findQuestionById(3);
@@ -116,13 +131,12 @@ export default class App {
     const q4Majority = q4?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionName: "2500-4000" };
     const q8Majority = q8?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 3 }; // Default: atheist
     const q10Majority = q10?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 4 }; // Default: no bias
-    const q18Majority = q18?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 2 }; // Default: stay
 
     const religion =
       q8Majority.optionId === 1 ? "A religious" : q8Majority.optionId === 2 ? "A spiritual" : "An atheist";
     const gender = q2Majority.optionId === 1 ? "woman" : q2Majority.optionId === 2 ? "man" : "person";
-    const age = q3Majority.optionName;
-    const salary = q4Majority.optionName;
+    const age = getMiddle(q3Majority.optionName);
+    const salary = getMiddle(q4Majority.optionName);
     const pronoun = q2Majority.optionId === 1 ? "She is" : q2Majority.optionId === 2 ? "He is" : "They are";
     const bias =
       q10Majority.optionId === 1
@@ -133,11 +147,11 @@ export default class App {
             ? "a little bit violent"
             : "neither racist, sexist nor violent";
     const ticket = q1Majority.optionId === 1 ? "paid" : "did not pay";
-    const leave = q18Majority.optionId === 1 ? "leave" : "stay";
 
     return `
+      The majority is
       ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
-      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to ${leave}.
+      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to leave.
     `;
   };
 
@@ -167,10 +181,15 @@ export default class App {
         data: {
           backgroundColor: this.backgroundColor,
 
+          /* Question related data */
+          question: this.activeQuestion?.name,
           options: this.activeQuestion?.options,
-          isAnimated: this.activeQuestion?.isAnimated,
           optionsShown: this.activeQuestion?.optionsShown,
+          optionsAnimated: this.activeQuestion?.optionsAnimated,
+          showQuestion: this.activeQuestion?.showQuestion,
+          showOnlyOptionId: this.activeQuestion?.showOnlyOptionId,
 
+          /* Etc related data */
           summary: this.summary,
           voterIds: this.voterIds,
         },

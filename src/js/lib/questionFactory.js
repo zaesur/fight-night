@@ -20,7 +20,7 @@ export default class QuestionFactory {
       .map(([_, value]) => this.fromJSON(JSON.parse(value)));
 
     const activeQuestionId = parseInt(this.#storage.getItem("active_question"));
-    const activeQuestion = questions.find(({ questionId }) => questionId === activeQuestionId);
+    const activeQuestion = questions.find(({ id }) => id === activeQuestionId);
 
     return [activeQuestion, questions];
   };
@@ -32,8 +32,22 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ questionId, questionName, options, activeOptions, rawResults }) => {
-    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions, rawResults);
+  fromJSON = ({
+    questionId,
+    questionName,
+    options,
+    activeOptions,
+    rawResults,
+    isAnimated,
+    showQuestion,
+    showOnlyOptionId,
+  }) => {
+    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions, {
+      rawResults,
+      isAnimated,
+      showQuestion,
+      showOnlyOptionId,
+    });
   };
 
   /**
@@ -44,14 +58,22 @@ export default class QuestionFactory {
    * @memberof Question
    */
   fromForm = (formData) => {
-    const questionId = parseInt(formData.get("questionId"));
-    const questionName = formData.get("questionName");
+    const id = parseInt(formData.get("id"));
+    const question = formData.get("question");
     const activeOptions = parseInt(formData.get("activeOptions"));
+    const isAnimated = formData.get("isAnimated") !== "undefined";
+    const showQuestion = formData.get("showQuestion") !== "undefined";
+    const showOnlyOptionId = formData.get("showOnlyOptionId") !== "undefined";
+
     const options = formData
       .getAll("option")
       .map((optionName, index) => ({ optionId: index + 1, optionName }))
       .filter(({ optionName }) => Boolean(optionName));
 
-    return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions);
+    return new Question(this.#client, this.#storage, id, question, options, activeOptions, {
+      isAnimated,
+      showQuestion,
+      showOnlyOptionId,
+    });
   };
 }

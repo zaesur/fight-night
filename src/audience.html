@@ -10,22 +10,21 @@
   </head>
   <body>
     <main>
+      <p id="question" />
       <section id="results" />
     </main>
 
     <template>
       <div class="result">
-        <span data-id="percentage">25%</span>
+        <label class="option-percentage" data-id="percentage">25%</label>
 
-        <svg width="200" height="200">
+        <svg viewbox="0 0 200 200">
           <circle cx="100" cy="100">
             <animate attributeName="r" dur="2s" values="0;25" calcMode="spline" keySplines="0 0.5 0.5 1" />
           </circle>
         </svg>
 
-        <div class="force-down">
-          <label class="option-label" data-id="optionName">Label</label>
-        </div>
+        <label class="option-label" data-id="optionName">Label</label>
       </div>
     </template>
   </body>

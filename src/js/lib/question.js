@@ -12,27 +12,38 @@ export default class Question {
   #storage;
 
   rawResults = [];
+  optionsShown = [];
+  optionsAnimated = [];
   isClosed = true;
 
   /**
    * Creates an instance of Question.
    * @param { Client } client
-   * @param { number } questionId
-   * @param { str } questionName
+   * @param { number } id
+   * @param { str } name
    * @param { Option[] } options
    * @memberof Question
    */
-  constructor(client, storage, questionId, questionName, options, activeOptions, rawResults) {
+  constructor(
+    client,
+    storage,
+    id,
+    name,
+    options,
+    activeOptions,
+    { rawResults = [], isAnimated = false, showQuestion = false, showOnlyOptionId = false }
+  ) {
     this.#client = client;
     this.#storage = storage;
 
-    this.questionId = questionId;
-    this.questionName = questionName;
+    this.id = id;
+    this.name = name;
     this.options = options;
     this.activeOptions = activeOptions;
     this.rawResults = rawResults;
-
-    this.isAnimated = [5, 6, 14, 15, 16, 17].includes(questionId);
+    this.isAnimated = isAnimated;
+    this.showQuestion = showQuestion;
+    this.showOnlyOptionId = showOnlyOptionId;
   }
 
   start = async () => {
@@ -51,7 +62,14 @@ export default class Question {
       await this.close();
     }
 
-    this.optionsShown = optionId ? [optionId] : this.options.map(({ optionId }) => optionId);
+    if (optionId) {
+      this.optionsShown.push(optionId);
+      this.optionsAnimated = this.isAnimated ? [optionId] : [];
+    } else {
+      const optionIds = this.options.map(({ optionId }) => optionId);
+      this.optionsShown = optionIds;
+      this.optionsAnimated = this.isAnimated ? optionIds : [];
+    }
   };
 
   refresh = async () => {
@@ -60,8 +78,8 @@ export default class Question {
   };
 
   save = () => {
-    this.#storage.setItem("active_question", this.questionId);
-    this.#storage.setItem(`question_${this.questionId}`, JSON.stringify(this));
+    this.#storage.setItem("active_question", this.id);
+    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
   };
 
   setVotes = (formData) => {
@@ -151,10 +169,13 @@ export default class Question {
    * @memberof Question
    */
   toJSON = () => ({
-    questionId: this.questionId,
-    questionName: this.questionName,
+    id: this.id,
+    name: this.name,
     options: this.options,
     activeOptions: this.activeOptions,
     rawResults: this.rawResults,
+    isAnimated: this.isAnimated,
+    showQuestion: this.showQuestion,
+    showOnlyOptionId: this.showOnlyOptionId,
   });
 }

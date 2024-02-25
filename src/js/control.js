@@ -1,7 +1,7 @@
 import config from "../config.js";
 import App from "./lib/app.js";
 import Client, { ClientError } from "./lib/client.js";
-import { roundPercentages } from "./lib/utils.js";
+import { roundPercentages, exportToCSV } from "./lib/utils.js";
 
 let interval;
 const intervalTimeout = 5000;
@@ -9,6 +9,7 @@ const intervalTimeout = 5000;
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
+const statusElement = document.getElementById("status");
 const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
 const inputs = resultsElement.querySelectorAll("input");
@@ -21,6 +22,9 @@ const summarizeButton = document.getElementById("summarize");
 const novoteButton = document.getElementById("show-novote");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
+const exportButton = document.getElementById("export");
+const keypadMinField = document.getElementById("min-keypad-id");
+const keypadMaxField = document.getElementById("max-keypad-id");
 
 const resetError = () => {
   errorElement.textContent = "";
@@ -33,6 +37,34 @@ const showError = (error) => {
   } else {
     throw error;
   }
+};
+
+const pollHardware = () => {
+  statusElement.classList.remove("active", "inactive");
+
+  app
+    .pollHardware()
+    .then((hardwareActive) => {
+      if (hardwareActive) {
+        statusElement.classList.add("active");
+        startHardwareButton.disabled = true;
+        stopHardwareButton.disabled = false;
+        keypadMinField.disabled = true;
+        keypadMaxField.disabled = true;
+      } else {
+        statusElement.classList.add("inactive");
+        startHardwareButton.disabled = false;
+        stopHardwareButton.disabled = true;
+        keypadMinField.disabled = false;
+        keypadMaxField.disabled = false;
+      }
+    })
+    .catch(() => {
+      startHardwareButton.disabled = true;
+      stopHardwareButton.disabled = true;
+      keypadMinField.disabled = false;
+      keypadMaxField.disabled = false;
+    });
 };
 
 resultsElement.addEventListener("input", () => {
@@ -57,15 +89,10 @@ startHardwareButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   app
-    .startHardware(
-      parseInt(document.getElementById("min-keypad-id").value),
-      parseInt(document.getElementById("max-keypad-id").value) + 1
-    )
+    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value) + 1)
+    .then(pollHardware)
     .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
+    .catch(showError);
 });
 
 // On stop hardware input.
@@ -73,13 +100,7 @@ stopHardwareButton.addEventListener("click", (event) => {
   event.preventDefault();
   event.target.disabled = true;
 
-  app
-    .stopHardware()
-    .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
+  app.stopHardware().then(pollHardware).then(resetError).catch(showError);
 });
 
 // On stop question input.
@@ -177,60 +198,76 @@ blackButton.addEventListener("click", (event) => {
   app.setBackgroundColor("black");
 });
 
+exportButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  exportToCSV();
+});
+
 const questionsElement = document.getElementById("questions");
 const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, answers, activeOptions }) => {
-  const clone = document.importNode(templateElement, true);
-  const form = clone.querySelector("form");
-  const legend = clone.querySelector("legend");
-  const inputs = clone.querySelectorAll("input");
-  const button = clone.querySelector("button");
+const nodes = config.questions.map(
+  ({ id, question, options, activeOptions, isAnimated, showQuestion, showOnlyOptionId }) => {
+    const clone = document.importNode(templateElement, true);
+    const form = clone.querySelector("form");
+    const legend = clone.querySelector("legend");
+    const inputs = clone.querySelectorAll("input");
+    const button = clone.querySelector("button");
 
-  legend.textContent = `${id}: ${question}`;
-  for (const [i, answer] of answers.entries()) {
-    const input = inputs[i];
-    if (answer) {
-      input.value = answer;
+    legend.textContent = `${id}: ${question}`;
+    for (const input of inputs) {
+      const optionId = input.dataset.optionId;
+      const option = options[optionId];
+
+      if (option) {
+        input.value = option;
+      } else {
+        input.parentElement.style.display = "none";
+      }
     }
+
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.target.disabled = true;
+
+      const formData = new FormData(form);
+      formData.append("question", question);
+      formData.append("id", id);
+      formData.append("activeOptions", activeOptions);
+      formData.append("isAnimated", isAnimated);
+      formData.append("showQuestion", showQuestion);
+      formData.append("showOnlyOptionId", showOnlyOptionId);
+
+      app
+        .startQuestion(formData)
+        .then(() => {
+          resultsLabelElement.textContent = app.getActiveQuestionName();
+
+          const refresh = () => {
+            app.getResults().then((results) => {
+              for (const { optionId, votes } of results) {
+                const input = resultsElement.querySelector(`input[name="${optionId}"]`);
+                input.value = votes;
+                resultsElement.dispatchEvent(new Event("input"));
+              }
+            });
+          };
+
+          refresh();
+          interval = window.setInterval(refresh, intervalTimeout);
+        })
+        .catch(showError)
+        .finally(() => {
+          event.target.disabled = false;
+        });
+    });
+
+    return clone;
   }
-
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.target.disabled = true;
-
-    const formData = new FormData(form);
-    formData.append("questionName", question);
-    formData.append("questionId", id);
-    formData.append("activeOptions", activeOptions);
-
-    app
-      .startQuestion(formData)
-      .then(() => {
-        resultsLabelElement.textContent = app.getActiveQuestionName();
-
-        const refresh = () => {
-          app.getResults().then((results) => {
-            for (const { optionId, votes } of results) {
-              const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-              input.value = votes;
-              resultsElement.dispatchEvent(new Event("input"));
-            }
-          });
-        };
-
-        refresh();
-        interval = window.setInterval(refresh, intervalTimeout);
-      })
-      .catch(showError)
-      .finally(() => {
-        event.target.disabled = false;
-      });
-  });
-
-  return clone;
-});
+);
 
 questionsElement.replaceChildren(...nodes);
+window.setInterval(pollHardware, intervalTimeout);
+pollHardware();

@@ -14,10 +14,11 @@
         <form>
           <fieldset>
             <legend>Hardware</legend>
-            <input id="min-keypad-id" name="min" type="number" placeholder="min ID" min="1" />
-            <input id="max-keypad-id" name="max" type="number" placeholder="max ID" min="1" />
-            <button id="start-hardware">Start hardware</button>
-            <button id="stop-hardware">Stop hardware</button>
+            <span id="status"></span>
+            <input id="min-keypad-id" name="min" type="number" placeholder="min ID" min="1" disabled />
+            <input id="max-keypad-id" name="max" type="number" placeholder="max ID" min="1" disabled />
+            <button id="start-hardware" disabled>Start hardware</button>
+            <button id="stop-hardware" disabled>Stop hardware</button>
           </fieldset>
 
           <fieldset>
@@ -70,6 +71,7 @@
             <legend>Etc</legend>
             <button id="summarize">Publish summary</button>
             <button id="show-novote">Publish novote</button>
+            <button id="export">Export</button>
           </fieldset>
 
           <fieldset>
@@ -85,11 +87,26 @@
       <form>
         <fieldset class="options">
           <legend class="label">Question</legend>
-          <input name="option" type="text" placeholder="disabled" />
-          <input name="option" type="text" placeholder="disabled" />
-          <input name="option" type="text" placeholder="disabled" />
-          <input name="option" type="text" placeholder="disabled" />
-          <input name="option" type="text" placeholder="disabled" />
+          <label>
+            1:
+            <input name="option" type="text" data-option-id="1" />
+          </label>
+          <label>
+            2:
+            <input name="option" type="text" data-option-id="2" />
+          </label>
+          <label>
+            3:
+            <input name="option" type="text" data-option-id="3" />
+          </label>
+          <label>
+            4:
+            <input name="option" type="text" data-option-id="4" />
+          </label>
+          <label>
+            5:
+            <input name="option" type="text" data-option-id="5" />
+          </label>
           <button>Start voting</button>
         </fieldset>
       </form>
