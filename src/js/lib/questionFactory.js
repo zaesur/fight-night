@@ -32,11 +32,21 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ questionId, questionName, options, activeOptions, rawResults, isAnimated, showQuestion }) => {
+  fromJSON = ({
+    questionId,
+    questionName,
+    options,
+    activeOptions,
+    rawResults,
+    isAnimated,
+    showQuestion,
+    showOnlyOptionId,
+  }) => {
     return new Question(this.#client, this.#storage, questionId, questionName, options, activeOptions, {
       rawResults,
       isAnimated,
       showQuestion,
+      showOnlyOptionId,
     });
   };
 
@@ -52,7 +62,8 @@ export default class QuestionFactory {
     const question = formData.get("question");
     const activeOptions = parseInt(formData.get("activeOptions"));
     const isAnimated = formData.get("isAnimated") !== "undefined";
-    const show = formData.get("show") !== "undefined";
+    const showQuestion = formData.get("showQuestion") !== "undefined";
+    const showOnlyOptionId = formData.get("showOnlyOptionId") !== "undefined";
 
     const options = formData
       .getAll("option")
@@ -61,7 +72,8 @@ export default class QuestionFactory {
 
     return new Question(this.#client, this.#storage, id, question, options, activeOptions, {
       isAnimated,
-      show,
+      showQuestion,
+      showOnlyOptionId,
     });
   };
 }

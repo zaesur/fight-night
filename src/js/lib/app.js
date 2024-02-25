@@ -165,12 +165,15 @@ export default class App {
         data: {
           backgroundColor: this.backgroundColor,
 
+          /* Question related data */
           question: this.activeQuestion?.name,
           options: this.activeQuestion?.options,
-          isAnimated: this.activeQuestion?.isAnimated,
           optionsShown: this.activeQuestion?.optionsShown,
-          showQuestion: this.activeQuestion?.show,
+          optionsAnimated: this.activeQuestion?.optionsAnimated,
+          showQuestion: this.activeQuestion?.showQuestion,
+          showOnlyOptionId: this.activeQuestion?.showOnlyOptionId,
 
+          /* Etc related data */
           summary: this.summary,
           voterIds: this.voterIds,
         },

@@ -3,12 +3,14 @@ const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
 const questionElement = document.getElementById("question");
 
+const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+
 const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = "hidden";
 };
 
-const renderOptions = ({ options, showQuestion, question }) => {
+const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
 
@@ -22,8 +24,9 @@ const renderOptions = ({ options, showQuestion, question }) => {
     clone.querySelector("svg").style.display = "none";
     clone.querySelector("[data-id='percentage']").style.display = "none";
 
-    const label = String.fromCodePoint("①".codePointAt(0) + optionId - 1);
-    clone.querySelector("[data-id='optionName']").textContent = label === optionName ? label : `${label} ${optionName}`;
+    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
+      ? getUnicodeForOptionId(optionId)
+      : `${getUnicodeForOptionId(optionId)} ${optionName}`;
 
     return clone;
   };
@@ -31,18 +34,21 @@ const renderOptions = ({ options, showQuestion, question }) => {
   resultsElement.replaceChildren(...options.map(renderOption));
 };
 
-const renderResults = ({ options, isAnimated, optionsShown }) => {
+const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
   questionElement.style.visibility = "hidden";
 
   const renderResult = ({ optionName, optionId, percentage }) => {
+    const isAnimated = optionsAnimated.includes(optionId);
     const clone = document.importNode(templateElement.content, true);
     const svg = clone.querySelector("svg");
 
     clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
 
-    clone.querySelector("[data-id='optionName']").textContent = optionName;
+    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
+      ? getUnicodeForOptionId(optionId)
+      : optionName;
     clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
 
     // Animate SVG

@@ -182,61 +182,64 @@ const templateElement = document.querySelector("template").content;
 
 resultsLabelElement.textContent = app.getActiveQuestionName();
 
-const nodes = config.questions.map(({ id, question, options, activeOptions, isAnimated, show }) => {
-  const clone = document.importNode(templateElement, true);
-  const form = clone.querySelector("form");
-  const legend = clone.querySelector("legend");
-  const inputs = clone.querySelectorAll("input");
-  const button = clone.querySelector("button");
+const nodes = config.questions.map(
+  ({ id, question, options, activeOptions, isAnimated, showQuestion, showOnlyOptionId }) => {
+    const clone = document.importNode(templateElement, true);
+    const form = clone.querySelector("form");
+    const legend = clone.querySelector("legend");
+    const inputs = clone.querySelectorAll("input");
+    const button = clone.querySelector("button");
 
-  legend.textContent = `${id}: ${question}`;
-  for (const input of inputs) {
-    const optionId = input.dataset.optionId;
-    const option = options[optionId];
+    legend.textContent = `${id}: ${question}`;
+    for (const input of inputs) {
+      const optionId = input.dataset.optionId;
+      const option = options[optionId];
 
-    if (option) {
-      input.value = option;
-    } else {
-      input.parentElement.style.display = "none";
+      if (option) {
+        input.value = option;
+      } else {
+        input.parentElement.style.display = "none";
+      }
     }
+
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.target.disabled = true;
+
+      const formData = new FormData(form);
+      formData.append("question", question);
+      formData.append("id", id);
+      formData.append("activeOptions", activeOptions);
+      formData.append("isAnimated", isAnimated);
+      formData.append("showQuestion", showQuestion);
+      formData.append("showOnlyOptionId", showOnlyOptionId);
+
+      app
+        .startQuestion(formData)
+        .then(() => {
+          resultsLabelElement.textContent = app.getActiveQuestionName();
+
+          const refresh = () => {
+            app.getResults().then((results) => {
+              for (const { optionId, votes } of results) {
+                const input = resultsElement.querySelector(`input[name="${optionId}"]`);
+                input.value = votes;
+                resultsElement.dispatchEvent(new Event("input"));
+              }
+            });
+          };
+
+          refresh();
+          interval = window.setInterval(refresh, intervalTimeout);
+        })
+        .catch(showError)
+        .finally(() => {
+          event.target.disabled = false;
+        });
+    });
+
+    return clone;
   }
-
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.target.disabled = true;
-
-    const formData = new FormData(form);
-    formData.append("question", question);
-    formData.append("id", id);
-    formData.append("activeOptions", activeOptions);
-    formData.append("isAnimated", isAnimated);
-    formData.append("show", show);
-
-    app
-      .startQuestion(formData)
-      .then(() => {
-        resultsLabelElement.textContent = app.getActiveQuestionName();
-
-        const refresh = () => {
-          app.getResults().then((results) => {
-            for (const { optionId, votes } of results) {
-              const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-              input.value = votes;
-              resultsElement.dispatchEvent(new Event("input"));
-            }
-          });
-        };
-
-        refresh();
-        interval = window.setInterval(refresh, intervalTimeout);
-      })
-      .catch(showError)
-      .finally(() => {
-        event.target.disabled = false;
-      });
-  });
-
-  return clone;
-});
+);
 
 questionsElement.replaceChildren(...nodes);

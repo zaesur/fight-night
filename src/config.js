@@ -36,10 +36,10 @@ export default Object.freeze({
     {
       "id": 5,
       "question": "Who do you like most?",
-      "options": { 1: "", 2: "", 3: "", 4: "", 5: "" },
+      "options": { 1: "1", 2: "2", 3: "3", 4: "4", 5: "5" },
       "activeOptions": 5,
       "isAnimated": true,
-      "showOptionLabels": false,
+      "showOnlyOptionId": true,
     },
     {
       "id": 6,
@@ -90,7 +90,7 @@ export default Object.freeze({
       "options": { 1: "Aurélie", 2: "Eva", 3: "Julia" },
       "activeOptions": 3,
       "isAnimated": true,
-      "show": true,
+      "showQuestion": true,
     },
     {
       "id": 14,

@@ -12,6 +12,8 @@ export default class Question {
   #storage;
 
   rawResults = [];
+  optionsShown = [];
+  optionsAnimated = [];
   isClosed = true;
 
   /**
@@ -29,7 +31,7 @@ export default class Question {
     name,
     options,
     activeOptions,
-    { rawResults = [], isAnimated = false, show = false }
+    { rawResults = [], isAnimated = false, showQuestion = false, showOnlyOptionId = false }
   ) {
     this.#client = client;
     this.#storage = storage;
@@ -40,7 +42,8 @@ export default class Question {
     this.activeOptions = activeOptions;
     this.rawResults = rawResults;
     this.isAnimated = isAnimated;
-    this.show = show;
+    this.showQuestion = showQuestion;
+    this.showOnlyOptionId = showOnlyOptionId;
   }
 
   start = async () => {
@@ -59,9 +62,14 @@ export default class Question {
       await this.close();
     }
 
-    this.optionsShown = optionId
-      ? [...(this.optionsShown ?? []), optionId]
-      : this.options.map(({ optionId }) => optionId);
+    if (optionId) {
+      this.optionsShown.push(optionId);
+      this.optionsAnimated = this.isAnimated ? [optionId] : [];
+    } else {
+      const optionIds = this.options.map(({ optionId }) => optionId);
+      this.optionsShown = optionIds;
+      this.optionsAnimated = this.isAnimated ? optionIds : [];
+    }
   };
 
   refresh = async () => {
@@ -167,6 +175,7 @@ export default class Question {
     activeOptions: this.activeOptions,
     rawResults: this.rawResults,
     isAnimated: this.isAnimated,
-    show: this.show,
+    showQuestion: this.showQuestion,
+    showOnlyOptionId: this.showOnlyOptionId,
   });
 }
