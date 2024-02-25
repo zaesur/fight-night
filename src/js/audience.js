@@ -32,13 +32,16 @@ const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) =>
   const renderOption = ({ optionId, optionName }) => {
     const clone = document.importNode(templateElement.content, true);
 
-    // Set text, hide SVG
-    clone.querySelector("svg").style.display = "none";
-    clone.querySelector("[data-id='percentage']").style.display = "none";
+    const svgNode = clone.querySelector("svg");
+    const optionIdNode = clone.querySelector(".option-id");
+    const optionLabelNode = clone.querySelector(".option-label");
+    const optionPercentageNode = clone.querySelector(".option-percentage");
 
-    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
-      ? getUnicodeForOptionId(optionId)
-      : `${getUnicodeForOptionId(optionId)} ${optionName}`;
+    svgNode.style.display = "none";
+    optionPercentageNode.style.display = "none";
+    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
+    optionLabelNode.textContent = optionName;
 
     return clone;
   };
@@ -54,18 +57,22 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
   const renderResult = ({ optionName, optionId, percentage }) => {
     const isAnimated = optionsAnimated.includes(optionId);
     const clone = document.importNode(templateElement.content, true);
-    const svg = clone.querySelector("svg");
+
+    const svgNode = clone.querySelector("svg");
+    const optionIdNode = clone.querySelector(".option-id");
+    const optionLabelNode = clone.querySelector(".option-label");
+    const optionPercentageNode = clone.querySelector(".option-percentage");
 
     clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
 
-    clone.querySelector("[data-id='optionName']").textContent = showOnlyOptionId
-      ? getUnicodeForOptionId(optionId)
-      : optionName;
-    clone.querySelector("[data-id='percentage']").textContent = `${Math.round(percentage)}%`;
+    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionIdNode.style.display = showOnlyOptionId ? "inline" : "none";
+    optionLabelNode.textContent = optionName;
+    optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
+    optionPercentageNode.textContent = `${Math.round(percentage)}%`;
 
-    // Animate SVG
-    svg.querySelector("circle").setAttribute("r", percentage);
-    svg.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
+    svgNode.querySelector("circle").setAttribute("r", percentage);
+    svgNode.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
 
     return clone;
   };

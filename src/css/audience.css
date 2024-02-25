@@ -1,6 +1,6 @@
 body,
 html {
-  font-size: 48px;
+  font-size: 60px;
   user-select: none;
   text-transform: uppercase;
 }
@@ -27,7 +27,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .result {
@@ -37,7 +37,7 @@ main {
   align-items: center;
   justify-content: center;
   flex: 1 1 0;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .summary,
@@ -46,11 +46,17 @@ main {
   text-align: center;
 }
 
+.option-id,
 .option-label,
 .option-percentage {
   height: 1rem;
   cursor: inherit;
   text-align: center;
+}
+
+.option-id {
+  line-height: 1rem;
+  vertical-align: text-top;
 }
 
 svg {
