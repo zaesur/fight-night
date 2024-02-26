@@ -8,12 +8,14 @@ const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePoint
 const resizeVoterIds = () => {
   const element = document.querySelector(".novote");
 
-  // Make sure the voter IDs never exceed the container
-  let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
-  element.style.fontSize = fontSize + "px";
+  if (element) {
+    // Make sure the voter IDs never exceed the container
+    let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
+    element.style.fontSize = fontSize + "px";
 
-  while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
-    element.style.fontSize = --fontSize + "px";
+    while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
+      element.style.fontSize = --fontSize + "px";
+    }
   }
 };
 
