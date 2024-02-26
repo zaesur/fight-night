@@ -59,6 +59,8 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     const clone = document.importNode(templateElement.content, true);
 
     const svgNode = clone.querySelector("svg");
+    const circleNode = svgNode.querySelector("circle");
+    const animateNode = svgNode.querySelector("animate");
     const optionIdNode = clone.querySelector(".option-id");
     const optionLabelNode = clone.querySelector(".option-label");
     const optionPercentageNode = clone.querySelector(".option-percentage");
@@ -71,8 +73,13 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
     optionPercentageNode.textContent = `${Math.round(percentage)}%`;
 
-    svgNode.querySelector("circle").setAttribute("r", percentage);
-    svgNode.querySelector("animate").setAttribute("values", `${isAnimated ? 0 : percentage};${percentage}`);
+    if (isAnimated) {
+      circleNode.setAttribute("r", 0);
+      circleNode.setAttribute("values", `0;${percentage}`);
+    } else {
+      circleNode.setAttribute("r", percentage);
+      circleNode.removeChild(animateNode);
+    }
 
     return clone;
   };
@@ -113,7 +120,10 @@ const render = (state, data) => {
     "showVoterIds": renderVoterIds,
   };
 
-  map[state]?.(data);
+  // Necessary to show animations correctly.
+  window.requestAnimationFrame(() => {
+    map[state]?.(data);
+  });
 };
 
 window.addEventListener("resize", resizeVoterIds);

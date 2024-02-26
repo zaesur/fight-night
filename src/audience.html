@@ -19,8 +19,15 @@
         <label class="option-percentage">25%</label>
 
         <svg viewbox="0 0 200 200">
-          <circle cx="100" cy="100">
-            <animate attributeName="r" dur="2s" values="0;25" calcMode="spline" keySplines="0 0.5 0.5 1" />
+          <circle r="0" cx="100" cy="100">
+            <animate
+              attributeName="r"
+              dur="2s"
+              fill="freeze"
+              values="0;25"
+              calcMode="spline"
+              keySplines="0 0.5 0.5 1"
+            />
           </circle>
         </svg>
 
