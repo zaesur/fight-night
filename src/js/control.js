@@ -114,8 +114,8 @@ stopQuestionButton.addEventListener("click", (event) => {
       resetError();
       window.clearInterval(interval);
     })
-    .catch(showError)
-    .finally(() => {
+    .catch(() => {
+      showError();
       event.target.disabled = false;
     });
 });
@@ -243,6 +243,7 @@ const nodes = config.questions.map(
       app
         .startQuestion(formData)
         .then(() => {
+          stopQuestionButton.disabled = false;
           resultsLabelElement.textContent = app.getActiveQuestionName();
 
           const refresh = () => {
