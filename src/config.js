@@ -22,8 +22,8 @@
  * @type { Config }
  */
 export default Object.freeze({
-  // "apiUrl": "http://localhost:3000",
-  "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
+  "apiUrl": "http://localhost:3000",
+  // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
   "questions": [
     {
       "id": 1,
