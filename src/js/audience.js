@@ -75,7 +75,7 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);
-      circleNode.setAttribute("values", `0;${percentage}`);
+      animateNode.setAttribute("values", `0;${percentage}`);
     } else {
       circleNode.setAttribute("r", percentage);
       circleNode.removeChild(animateNode);
