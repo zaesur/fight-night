@@ -5,6 +5,17 @@ const questionElement = document.getElementById("question");
 
 const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
 
+const formatOptionName = (name) => {
+  const match = /(\d{3,})(-|—)(\d{3,})/.exec(name);
+
+  if (match) {
+    const [, begin, dash, end] = match;
+    return `${begin}<br>${dash}${end}`;
+  } else {
+    return name;
+  }
+};
+
 const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = "hidden";
@@ -29,7 +40,7 @@ const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) =>
     optionPercentageNode.style.display = "none";
     optionIdNode.textContent = getUnicodeForOptionId(optionId);
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
-    optionLabelNode.textContent = optionName;
+    optionLabelNode.innerHTML = formatOptionName(optionName);
 
     return clone;
   };
@@ -60,6 +71,7 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     optionLabelNode.textContent = optionName;
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
     optionPercentageNode.textContent = `${Math.round(percentage)}%`;
+    optionLabelNode.innerHTML = formatOptionName(optionName);
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);
