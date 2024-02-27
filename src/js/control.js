@@ -114,9 +114,9 @@ stopQuestionButton.addEventListener("click", (event) => {
       resetError();
       window.clearInterval(interval);
     })
-    .catch(() => {
-      showError();
+    .catch((error) => {
       event.target.disabled = false;
+      showError(error);
     });
 });
 

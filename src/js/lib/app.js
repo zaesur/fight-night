@@ -80,8 +80,12 @@ export default class App {
    * @memberof App
    */
   stopQuestion = async () => {
-    await this.activeQuestion.close();
-    this.activeQuestion.save();
+    if (this.activeQuestion) {
+      await this.activeQuestion.close();
+      this.activeQuestion.save();
+    } else {
+      this.#client.stopQuestion();
+    }
   };
 
   /**
