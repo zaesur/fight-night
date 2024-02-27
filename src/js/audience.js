@@ -5,20 +5,6 @@ const questionElement = document.getElementById("question");
 
 const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
 
-const resizeVoterIds = () => {
-  const element = document.querySelector(".novote");
-
-  if (element) {
-    // Make sure the voter IDs never exceed the container
-    let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
-    element.style.fontSize = fontSize + "px";
-
-    while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
-      element.style.fontSize = --fontSize + "px";
-    }
-  }
-};
-
 const renderBlank = ({ backgroundColor }) => {
   bodyElement.style.backgroundColor = backgroundColor;
   bodyElement.style.visibility = "hidden";
@@ -109,8 +95,6 @@ const renderVoterIds = ({ voterIds }) => {
   element.classList.add("novote");
   element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
   resultsElement.replaceChildren(element);
-
-  resizeVoterIds();
 };
 
 const render = (state, data) => {
@@ -127,8 +111,6 @@ const render = (state, data) => {
     map[state]?.(data);
   });
 };
-
-window.addEventListener("resize", resizeVoterIds);
 
 // Since render is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {

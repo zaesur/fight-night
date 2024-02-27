@@ -30,6 +30,10 @@ main {
   gap: 0.5rem;
 }
 
+#results:has(.novote) {
+  overflow: hidden;
+}
+
 .result {
   height: 100%;
   display: flex;
