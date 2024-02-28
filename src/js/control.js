@@ -89,7 +89,7 @@ startHardwareButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   app
-    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value) + 1)
+    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value))
     .then(pollHardware)
     .then(resetError)
     .catch(showError);
