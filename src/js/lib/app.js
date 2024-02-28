@@ -108,7 +108,7 @@ export default class App {
 
   createSummary = async () => {
     const getMiddle = (str) => {
-      const match = str.match(/(\d*)[-—](\d*)/);
+      const match = str.match(/(\d+)[-—](\d+)/);
       if (match) {
         const [, start, end] = match;
         const middle = Math.floor((parseInt(start) + parseInt(end)) / 2);
