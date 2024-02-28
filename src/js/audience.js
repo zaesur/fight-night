@@ -12,7 +12,7 @@ const formatOptionLabel = (name) => {
   // If we have a match, insert a breakpoint before the dash.
   const match = integerRangeRegex.exec(name);
 
-  return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name;
+  return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name.split(" ").join("<br>");
 };
 
 const renderBlank = ({ backgroundColor }) => {
