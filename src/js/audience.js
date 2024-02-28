@@ -3,17 +3,14 @@ const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
 const questionElement = document.getElementById("question");
 
-const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+const formatOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
 
-const formatOptionName = (name) => {
-  const match = /(\d{3,})(-|—)(\d{3,})/.exec(name);
+const formatOptionLabel = (name) => {
+  // Match any two numbers of 3 digits or more connected by a dash.
+  // If we have a match, insert a breakpoint before the dash.
+  const match = /(?<=\d{3,})(-|—)(?=\d{3,})/.exec(name);
 
-  if (match) {
-    const [, begin, dash, end] = match;
-    return `${begin}<br>${dash}${end}`;
-  } else {
-    return name;
-  }
+  return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name;
 };
 
 const renderBlank = ({ backgroundColor }) => {
@@ -38,9 +35,9 @@ const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) =>
 
     svgNode.style.display = "none";
     optionPercentageNode.style.display = "none";
-    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionIdNode.textContent = formatOptionId(optionId);
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
-    optionLabelNode.innerHTML = formatOptionName(optionName);
+    optionLabelNode.innerHTML = formatOptionLabel(optionName);
 
     return clone;
   };
@@ -66,12 +63,12 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
 
     clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
 
-    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionIdNode.textContent = formatOptionId(optionId);
     optionIdNode.style.display = showOnlyOptionId ? "inline" : "none";
     optionLabelNode.textContent = optionName;
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
     optionPercentageNode.textContent = `${Math.round(percentage)}%`;
-    optionLabelNode.innerHTML = formatOptionName(optionName);
+    optionLabelNode.innerHTML = formatOptionLabel(optionName);
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);

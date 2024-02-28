@@ -50,12 +50,15 @@ main {
   text-align: center;
 }
 
+.option-container {
+  text-align: right;
+}
+
 .option-id,
 .option-label,
 .option-percentage {
   height: 1rem;
   cursor: inherit;
-  text-align: center;
 }
 
 .option-id {

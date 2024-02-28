@@ -40,7 +40,7 @@ export default Object.freeze({
     {
       "id": 3,
       "question": "What is your age?",
-      "options": { 1: "-18", 2: "18—24", 3: "25—44", 4: "45—60", 5: "60+" },
+      "options": { 1: "-18", 2: "18—24", 3: "25—44", 4: "45—60", 5: "60⁺" },
       "activeOptions": 5,
     },
     {
