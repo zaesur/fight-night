@@ -3,12 +3,14 @@ const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
 const questionElement = document.getElementById("question");
 
+const integerRangeRegex = /(?<=\d{3,})(-|—)(?=\d{3,})/;
+
 const formatOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
 
 const formatOptionLabel = (name) => {
   // Match any two numbers of 3 digits or more connected by a dash.
   // If we have a match, insert a breakpoint before the dash.
-  const match = /(?<=\d{3,})(-|—)(?=\d{3,})/.exec(name);
+  const match = integerRangeRegex.exec(name);
 
   return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name;
 };
@@ -69,6 +71,7 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
     optionPercentageNode.textContent = `${Math.round(percentage)}%`;
     optionLabelNode.innerHTML = formatOptionLabel(optionName);
+    optionLabelNode.parentElement.style.textAlign = integerRangeRegex.test(optionName) ? "right" : "center";
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);

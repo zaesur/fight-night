@@ -124,7 +124,7 @@ export default Object.freeze({
     },
     {
       "id": 16,
-      "question": "who is winning two choices?",
+      "question": "Who is winning two choices?",
       "options": { 1: "NAME AGREE", 2: "NAME DISAGREE" },
       "isAnimated": true,
       "activeOptions": 2,
