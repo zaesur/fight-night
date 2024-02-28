@@ -3,20 +3,16 @@ const bodyElement = document.querySelector("body");
 const resultsElement = document.getElementById("results");
 const questionElement = document.getElementById("question");
 
-const getUnicodeForOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+const integerRangeRegex = /(?<=\d{3,})(-|—)(?=\d{3,})/;
 
-const resizeVoterIds = () => {
-  const element = document.querySelector(".novote");
+const formatOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
 
-  if (element) {
-    // Make sure the voter IDs never exceed the container
-    let fontSize = parseInt(window.getComputedStyle(bodyElement).fontSize * 2);
-    element.style.fontSize = fontSize + "px";
+const formatOptionLabel = (name) => {
+  // Match any two numbers of 3 digits or more connected by a dash.
+  // If we have a match, insert a breakpoint before the dash.
+  const match = integerRangeRegex.exec(name);
 
-    while (element.offsetHeight > resultsElement.offsetHeight * 0.8) {
-      element.style.fontSize = --fontSize + "px";
-    }
-  }
+  return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name;
 };
 
 const renderBlank = ({ backgroundColor }) => {
@@ -41,9 +37,9 @@ const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) =>
 
     svgNode.style.display = "none";
     optionPercentageNode.style.display = "none";
-    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionIdNode.textContent = formatOptionId(optionId);
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
-    optionLabelNode.textContent = optionName;
+    optionLabelNode.innerHTML = formatOptionLabel(optionName);
 
     return clone;
   };
@@ -69,11 +65,13 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
 
     clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
 
-    optionIdNode.textContent = getUnicodeForOptionId(optionId);
+    optionIdNode.textContent = formatOptionId(optionId);
     optionIdNode.style.display = showOnlyOptionId ? "inline" : "none";
     optionLabelNode.textContent = optionName;
     optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
     optionPercentageNode.textContent = `${Math.round(percentage)}%`;
+    optionLabelNode.innerHTML = formatOptionLabel(optionName);
+    optionLabelNode.parentElement.style.textAlign = integerRangeRegex.test(optionName) ? "right" : "center";
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);
@@ -109,8 +107,6 @@ const renderVoterIds = ({ voterIds }) => {
   element.classList.add("novote");
   element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
   resultsElement.replaceChildren(element);
-
-  resizeVoterIds();
 };
 
 const render = (state, data) => {
@@ -127,8 +123,6 @@ const render = (state, data) => {
     map[state]?.(data);
   });
 };
-
-window.addEventListener("resize", resizeVoterIds);
 
 // Since render is deterministic we can render on every event.
 window.addEventListener("storage", (event) => {

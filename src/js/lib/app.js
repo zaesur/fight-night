@@ -80,8 +80,12 @@ export default class App {
    * @memberof App
    */
   stopQuestion = async () => {
-    await this.activeQuestion.close();
-    this.activeQuestion.save();
+    if (this.activeQuestion) {
+      await this.activeQuestion.close();
+      this.activeQuestion.save();
+    } else {
+      this.#client.stopQuestion();
+    }
   };
 
   /**
@@ -104,15 +108,17 @@ export default class App {
 
   createSummary = async () => {
     const getMiddle = (str) => {
-      if (str.includes("-")) {
-        const [start, end] = str.split("-").map((n) => parseInt(n));
-        const middle = Math.floor((start + end) / 2);
+      const match = str.match(/(\d+)[-—](\d+)/);
+      if (match) {
+        const [, start, end] = match;
+        const middle = Math.floor((parseInt(start) + parseInt(end)) / 2);
 
         return String(middle);
       } else {
         return str;
       }
     };
+
     const q1 = this.findQuestionById(1);
     const q2 = this.findQuestionById(2);
     const q3 = this.findQuestionById(3);

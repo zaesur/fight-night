@@ -12,6 +12,7 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 0.5rem;
 }
 
 #question {
@@ -27,7 +28,10 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  gap: 0.5rem;
+}
+
+#results:has(.novote) {
+  overflow: hidden;
 }
 
 .result {
@@ -46,19 +50,18 @@ main {
   text-align: center;
 }
 
+.option-container {
+  text-align: center;
+  height: 2rem;
+}
+
 .option-id,
 .option-label,
 .option-percentage {
-  height: 1rem;
   cursor: inherit;
-  text-align: center;
 }
 
 .option-id {
   line-height: 1rem;
   vertical-align: text-top;
-}
-
-svg {
-  max-width: 20vw;
 }
