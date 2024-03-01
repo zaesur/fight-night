@@ -70,7 +70,14 @@ export default class App {
 
     this.audienceState = "showOptions";
     this.activeQuestion = question;
-    this.questions.push(question);
+
+    const index = this.questions.findIndex(({ id }) => question.id === id);
+    if (index >= 0) {
+      this.questions[index] = question;
+    } else {
+      this.questions.push(question);
+    }
+
     this.activeQuestion.save();
     this.#syncAudience();
   };
