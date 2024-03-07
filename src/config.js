@@ -24,6 +24,7 @@
 export default Object.freeze({
   "apiUrl": "http://localhost:3000",
   // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
+  "pollInterval": 2000,
   "questions": [
     {
       "id": 1,

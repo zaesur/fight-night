@@ -4,7 +4,7 @@ import Client, { ClientError } from "./lib/client.js";
 import { roundPercentages, exportToCSV } from "./lib/utils.js";
 
 let interval;
-const intervalTimeout = 5000;
+const intervalTimeout = config.pollInterval;
 
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
@@ -64,6 +64,9 @@ const pollHardware = () => {
       stopHardwareButton.disabled = true;
       keypadMinField.disabled = false;
       keypadMaxField.disabled = false;
+    })
+    .finally(() => {
+      window.setTimeout(pollHardware, intervalTimeout);
     });
 };
 
@@ -112,7 +115,7 @@ stopQuestionButton.addEventListener("click", (event) => {
     .stopQuestion()
     .then(() => {
       resetError();
-      window.clearInterval(interval);
+      window.clearTimeout(interval);
     })
     .catch((error) => {
       event.target.disabled = false;
@@ -131,7 +134,7 @@ publishQuestionButton.addEventListener("click", (event) => {
     .publishQuestion(formData)
     .then(() => {
       resetError();
-      window.clearInterval(interval);
+      window.clearTimeout(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
       resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
       resultsElement.dispatchEvent(new Event("input"));
@@ -173,7 +176,7 @@ for (const button of publishButtons) {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.target.disabled = true;
-    window.clearInterval(interval);
+    window.clearTimeout(interval);
 
     const optionId = parseInt(button.dataset.optionId);
     const formData = new FormData(resultsElement);
@@ -247,17 +250,21 @@ const nodes = config.questions.map(
           resultsLabelElement.textContent = app.getActiveQuestionName();
 
           const refresh = () => {
-            app.getResults().then((results) => {
-              for (const { optionId, votes } of results) {
-                const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-                input.value = votes;
-                resultsElement.dispatchEvent(new Event("input"));
-              }
-            });
+            app
+              .getResults()
+              .then((results) => {
+                for (const { optionId, votes } of results) {
+                  const input = resultsElement.querySelector(`input[name="${optionId}"]`);
+                  input.value = votes;
+                  resultsElement.dispatchEvent(new Event("input"));
+                }
+              })
+              .finally(() => {
+                interval = window.setTimeout(refresh, intervalTimeout);
+              });
           };
 
           refresh();
-          interval = window.setInterval(refresh, intervalTimeout);
         })
         .catch(showError)
         .finally(() => {
@@ -270,5 +277,4 @@ const nodes = config.questions.map(
 );
 
 questionsElement.replaceChildren(...nodes);
-window.setInterval(pollHardware, intervalTimeout);
 pollHardware();
