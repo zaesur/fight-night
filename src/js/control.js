@@ -14,6 +14,7 @@ const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
 const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
+const votesReceivedElement = document.getElementById("votes-received");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const stopQuestionButton = document.getElementById("stop-question");
@@ -137,6 +138,7 @@ publishQuestionButton.addEventListener("click", (event) => {
       window.clearTimeout(interval);
       resultsLabelElement.textContent = app.getActiveQuestionName();
       resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
+      votesReceivedElement.textContent = "0";
       resultsElement.dispatchEvent(new Event("input"));
     })
     .catch(showError)
@@ -252,7 +254,9 @@ const nodes = config.questions.map(
           const refresh = () => {
             app
               .getResults()
-              .then((results) => {
+              .then(({ results, votesReceived, votersActive }) => {
+                votesReceivedElement.textContent = `${votesReceived} (${Math.round((votesReceived / votersActive) * 100)}%)`;
+
                 for (const { optionId, votes } of results) {
                   const input = resultsElement.querySelector(`input[name="${optionId}"]`);
                   input.value = votes;

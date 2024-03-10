@@ -5,24 +5,28 @@ html {
   font-size: 16px;
 }
 
+/* HD */
 @media screen and (min-width: 1080px) {
   html {
     font-size: 40px;
   }
 }
 
+/* Full HD */
 @media screen and (min-width: 1920px) {
   html {
     font-size: 64px;
   }
 }
 
+/* 1440p */
 @media screen and (min-width: 2560px) {
   html {
     font-size: 96px;
   }
 }
 
+/* 4k HD */
 @media screen and (min-width: 3840px) {
   html {
     font-size: 128px;

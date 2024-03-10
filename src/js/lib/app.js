@@ -36,8 +36,13 @@ export default class App {
 
   pollHardware = async () => {
     const response = await this.#client.getState();
+    const isActive = Boolean(response.result["hardware_state"]);
+    const activeVoters = isActive ? response.result["keypadIds"].length : undefined;
 
-    return Boolean(response.result["hardware_state"]);
+    this.isActive = isActive;
+    this.activeVoters = activeVoters;
+
+    return isActive;
   };
 
   startHardware = async (minKeypadId, maxKeypadId) => {
@@ -50,7 +55,11 @@ export default class App {
 
   getResults = async () => {
     await this.activeQuestion.refresh();
-    return this.activeQuestion.options;
+    return {
+      results: this.activeQuestion.options,
+      votesReceived: this.activeQuestion.votesReceived,
+      votersActive: this.activeVoters,
+    };
   };
 
   getActiveKeypadIds = async () => {

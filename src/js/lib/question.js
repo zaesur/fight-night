@@ -109,6 +109,7 @@ export default class Question {
     }
 
     this.rawResults = results;
+    this.votesReceived = results.length;
   };
 
   calculatePercentages = () => {
