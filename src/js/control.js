@@ -74,6 +74,7 @@ const pollHardware = () => {
 resultsElement.addEventListener("input", () => {
   const formData = new FormData(resultsElement);
   const values = Array.from(formData.values()).map(Number);
+  const canPublish = values.some(Boolean);
 
   const total = values.reduce((r, n) => r + n, 0);
   const dataset = values.map((value) => (value / total) * 100 || 0);
@@ -82,6 +83,8 @@ resultsElement.addEventListener("input", () => {
   for (const [index, percentage] of percentages.entries()) {
     inputs[index].parentElement.childNodes[4].textContent = `${percentage}%`;
   }
+
+  publishQuestionButton.disabled = !canPublish;
 });
 
 // Fires the event to calculate percentages on first load.
@@ -139,11 +142,11 @@ publishQuestionButton.addEventListener("click", (event) => {
       resultsLabelElement.textContent = app.getActiveQuestionName();
       resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
       votesReceivedElement.textContent = "0";
-      resultsElement.dispatchEvent(new Event("input"));
     })
     .catch(showError)
     .finally(() => {
       event.target.disabled = false;
+      resultsElement.dispatchEvent(new Event("input"));
     });
 });
 
@@ -255,7 +258,7 @@ const nodes = config.questions.map(
             app
               .getResults()
               .then(({ results, votesReceived, votersActive }) => {
-                votesReceivedElement.textContent = `${votesReceived} (${Math.round((votesReceived / votersActive) * 100)}%)`;
+                votesReceivedElement.textContent = `${votesReceived}/${votersActive} (${Math.round((votesReceived / votersActive) * 100)}%)`;
 
                 for (const { optionId, votes } of results) {
                   const input = resultsElement.querySelector(`input[name="${optionId}"]`);
