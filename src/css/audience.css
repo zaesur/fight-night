@@ -89,15 +89,18 @@ main {
   cursor: inherit;
 }
 
-.option-label,
-.option-percentage {
+.option-label {
   font-size: 1rem;
 }
 
 .option-id {
   font-size: 1.5rem;
   vertical-align: baseline;
-  letter-spacing: 0.125rem;
+  letter-spacing: 0.25rem;
+}
+
+.option-percentage {
+  font-size: 2rem;
 }
 
 .novote,
