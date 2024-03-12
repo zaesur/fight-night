@@ -1,36 +1,18 @@
+@font-face {
+  font-family: "Roboto";
+  src: url(../assets/Roboto-Regular.ttf);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Roboto, monospace, sans-serif;
+}
+
 body,
 html {
   user-select: none;
   text-transform: uppercase;
-  font-size: 16px;
-}
-
-/* HD */
-@media screen and (min-width: 1080px) {
-  html {
-    font-size: 40px;
-  }
-}
-
-/* Full HD */
-@media screen and (min-width: 1920px) {
-  html {
-    font-size: 56px;
-  }
-}
-
-/* 1440p */
-@media screen and (min-width: 2560px) {
-  html {
-    font-size: 80px;
-  }
-}
-
-/* 4k HD */
-@media screen and (min-width: 3840px) {
-  html {
-    font-size: 120px;
-  }
+  font-size: 5vmin;
 }
 
 main {
