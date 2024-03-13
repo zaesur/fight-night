@@ -64,8 +64,9 @@ main {
 }
 
 .option-id {
-  font-size: 1.5rem;
-  font-weight: bold;
+  line-height: 0;
+  font-size: 3rem;
+  vertical-align: -0.3rem;
 }
 
 .center {
