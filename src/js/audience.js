@@ -5,7 +5,8 @@ const mainElement = document.querySelector("main");
 
 const integerRangeRegex = /(?<=\d{3,})(-|—)(?=\d{3,})/;
 
-const formatOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+const formatOptionId = (optionId) =>
+  `<span class="option-id">${String.fromCodePoint("①".codePointAt(0) + optionId - 1)}</span>`;
 
 const formatOptionLabel = (name) => {
   // Match any two numbers of 3 digits or more connected by a dash.
@@ -30,7 +31,7 @@ const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) =>
     const clone = document.importNode(optionTemplateElement.content, true);
     const labelNode = clone.querySelector(".option-label");
 
-    labelNode.textContent = showOnlyOptionId ? formatOptionId(optionId) : `${formatOptionId(optionId)} ${optionName}`;
+    labelNode.innerHTML = showOnlyOptionId ? formatOptionId(optionId) : `${formatOptionId(optionId)} ${optionName}`;
 
     return clone;
   };
