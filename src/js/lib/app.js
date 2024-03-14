@@ -55,10 +55,12 @@ export default class App {
 
   getResults = async () => {
     await this.activeQuestion.refresh();
+    const novotes = await this.getNoVotes(this.activeQuestion.id);
     return {
       results: this.activeQuestion.options,
       votesReceived: this.activeQuestion.votesReceived,
       votersActive: this.activeVoters,
+      novotes,
     };
   };
 
@@ -183,13 +185,19 @@ export default class App {
     this.#syncAudience();
   };
 
+  getNoVotes = async (id) => {
+    const question = this.findQuestionById(id);
+    const keypadIds = question?.rawResults?.map(({ keypadId }) => keypadId) ?? [];
+    const activeKeypadIds = this.keypadIds ?? (await this.getActiveKeypadIds());
+    const noVote = activeKeypadIds.filter((keypadId) => !keypadIds.includes(keypadId));
+
+    return noVote;
+  };
+
   publishVoterIds = async () => {
     this.audienceState = "showVoterIds";
 
-    const q18 = this.findQuestionById(18);
-    const q18KeypadIds = q18?.rawResults?.map(({ keypadId }) => keypadId) ?? [];
-    const activeKeypadIds = await this.getActiveKeypadIds();
-    const nonVoters = activeKeypadIds.filter((keypadId) => !q18KeypadIds.includes(keypadId));
+    const nonVoters = await this.getNoVotes(18);
 
     this.voterIds = nonVoters;
     this.#syncAudience();
