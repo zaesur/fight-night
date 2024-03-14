@@ -15,6 +15,7 @@ const resultsElement = document.getElementById("results");
 const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
 const votesReceivedElement = document.getElementById("votes-received");
+const novotesElement = document.getElementById("novote");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const stopQuestionButton = document.getElementById("stop-question");
@@ -257,8 +258,9 @@ const nodes = config.questions.map(
           const refresh = () => {
             app
               .getResults()
-              .then(({ results, votesReceived, votersActive }) => {
+              .then(({ results, votesReceived, votersActive, novotes }) => {
                 votesReceivedElement.textContent = `${votesReceived}/${votersActive} (${Math.round((votesReceived / votersActive) * 100)}%)`;
+                novotesElement.value = novotes.join(", ");
 
                 for (const { optionId, votes } of results) {
                   const input = resultsElement.querySelector(`input[name="${optionId}"]`);
