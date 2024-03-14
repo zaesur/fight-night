@@ -69,6 +69,7 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     const percentageNode = clone.querySelector(".result-percentage");
 
     percentageNode.textContent = `${Math.round(percentage)}%`;
+    labelNode.classList.toggle("number", isIntegerRange);
     labelNode.innerHTML = showOnlyOptionId ? formatOptionId(optionId) : formatOptionLabel(optionName);
 
     if (isAnimated) {

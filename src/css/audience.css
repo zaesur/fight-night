@@ -29,6 +29,7 @@ main {
   grid-template-rows: auto 20vw auto;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-columns: minmax(0, 1fr);
+  justify-items: center;
 }
 
 .result-empty {
@@ -48,6 +49,12 @@ main {
 
 .result-label {
   text-align: center;
+}
+
+.result-label.number {
+  position: relative;
+  left: -0.5em;
+  text-align: right;
 }
 
 .options {
