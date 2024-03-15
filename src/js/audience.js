@@ -1,11 +1,12 @@
-const templateElement = document.querySelector("template");
+const resultTemplateElement = document.getElementById("result-template");
+const optionTemplateElement = document.getElementById("option-template");
 const bodyElement = document.querySelector("body");
-const resultsElement = document.getElementById("results");
-const questionElement = document.getElementById("question");
+const mainElement = document.querySelector("main");
 
 const integerRangeRegex = /(?<=\d{3,})(-|—)(?=\d{3,})/;
 
-const formatOptionId = (optionId) => String.fromCodePoint("①".codePointAt(0) + optionId - 1);
+const formatOptionId = (optionId) =>
+  `<span class="option-id">${String.fromCodePoint("①".codePointAt(0) + optionId - 1)}</span>`;
 
 const formatOptionLabel = (name) => {
   // Match any two numbers of 3 digits or more connected by a dash.
@@ -23,55 +24,53 @@ const renderBlank = ({ backgroundColor }) => {
 const renderOptions = ({ options, showQuestion, question, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
-
-  questionElement.textContent = question;
-  questionElement.style.visibility = showQuestion ? "inherit" : "hidden";
+  mainElement.classList.remove("center", "results");
+  mainElement.classList.add("options");
 
   const renderOption = ({ optionId, optionName }) => {
-    const clone = document.importNode(templateElement.content, true);
+    const clone = document.importNode(optionTemplateElement.content, true);
+    const labelNode = clone.querySelector(".option-label");
 
-    const svgNode = clone.querySelector("svg");
-    const optionIdNode = clone.querySelector(".option-id");
-    const optionLabelNode = clone.querySelector(".option-label");
-    const optionPercentageNode = clone.querySelector(".option-percentage");
-
-    svgNode.style.display = "none";
-    optionPercentageNode.style.display = "none";
-    optionIdNode.textContent = formatOptionId(optionId);
-    optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
-    optionLabelNode.innerHTML = formatOptionLabel(optionName);
+    labelNode.innerHTML = showOnlyOptionId ? formatOptionId(optionId) : `${formatOptionId(optionId)} ${optionName}`;
 
     return clone;
   };
 
-  resultsElement.replaceChildren(...options.map(renderOption));
+  const questionElement = document.createElement("label");
+  questionElement.textContent = question;
+  questionElement.classList.add("option-question");
+
+  mainElement.replaceChildren(...(showQuestion ? [questionElement] : []), ...options.map(renderOption));
 };
 
 const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionId }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
-  questionElement.style.visibility = "hidden";
+  mainElement.classList.remove("center", "options");
+  mainElement.classList.add("results");
 
   const renderResult = ({ optionName, optionId, percentage }) => {
     const isAnimated = optionsAnimated.includes(optionId);
-    const clone = document.importNode(templateElement.content, true);
+    const isVisible = optionsShown.includes(optionId);
+    const isIntegerRange = integerRangeRegex.test(optionName);
+
+    if (!isVisible) {
+      const div = document.createElement("div");
+      div.classList.add("result-empty");
+      return div;
+    }
+
+    const clone = document.importNode(resultTemplateElement.content, true);
 
     const svgNode = clone.querySelector("svg");
     const circleNode = svgNode.querySelector("circle");
     const animateNode = svgNode.querySelector("animate");
-    const optionIdNode = clone.querySelector(".option-id");
-    const optionLabelNode = clone.querySelector(".option-label");
-    const optionPercentageNode = clone.querySelector(".option-percentage");
+    const labelNode = clone.querySelector(".result-label");
+    const percentageNode = clone.querySelector(".result-percentage");
 
-    clone.firstElementChild.style.visibility = optionsShown.includes(optionId) ? "inherit" : "hidden";
-
-    optionIdNode.textContent = formatOptionId(optionId);
-    optionIdNode.style.display = showOnlyOptionId ? "inline" : "none";
-    optionLabelNode.textContent = optionName;
-    optionLabelNode.style.display = showOnlyOptionId ? "none" : "inline";
-    optionPercentageNode.textContent = `${Math.round(percentage)}%`;
-    optionLabelNode.innerHTML = formatOptionLabel(optionName);
-    optionLabelNode.parentElement.style.textAlign = integerRangeRegex.test(optionName) ? "right" : "center";
+    percentageNode.textContent = `${Math.round(percentage)}%`;
+    labelNode.classList.toggle("number", isIntegerRange);
+    labelNode.innerHTML = showOnlyOptionId ? formatOptionId(optionId) : formatOptionLabel(optionName);
 
     if (isAnimated) {
       circleNode.setAttribute("r", 0);
@@ -84,29 +83,31 @@ const renderResults = ({ options, optionsShown, optionsAnimated, showOnlyOptionI
     return clone;
   };
 
-  resultsElement.replaceChildren(...options.map(renderResult));
+  mainElement.replaceChildren(...options.map(renderResult));
 };
 
 const renderSummary = ({ summary }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
-  questionElement.style.visibility = "hidden";
+  mainElement.classList.remove("options", "results");
+  mainElement.classList.add("center");
 
   const element = document.createElement("div");
   element.classList.add("summary");
   element.textContent = summary;
-  resultsElement.replaceChildren(element);
+  mainElement.replaceChildren(element);
 };
 
 const renderVoterIds = ({ voterIds }) => {
   bodyElement.style.backgroundColor = "white";
   bodyElement.style.visibility = "visible";
-  questionElement.style.visibility = "hidden";
+  mainElement.classList.remove("options", "results");
+  mainElement.classList.add("center");
 
   const element = document.createElement("div");
   element.classList.add("novote");
   element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
-  resultsElement.replaceChildren(element);
+  mainElement.replaceChildren(element);
 };
 
 const render = (state, data) => {

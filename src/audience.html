@@ -3,39 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/audience.css" />
     <link rel="shortcut icon" href="#" />
     <title>Fight Night (Audience)</title>
   </head>
   <body>
-    <main>
-      <p id="question" />
-      <section id="results" />
-    </main>
+    <main></main>
 
-    <template>
-      <div class="result">
-        <label class="option-percentage">25%</label>
+    <template id="option-template">
+      <label class="option-label">Label</label>
+    </template>
 
-        <svg viewbox="0 0 200 200">
-          <circle r="0" cx="100" cy="100">
-            <animate
-              attributeName="r"
-              dur="2s"
-              fill="freeze"
-              values="0;25"
-              calcMode="spline"
-              keySplines="0 0.5 0.5 1"
-            />
-          </circle>
-        </svg>
+    <template id="result-template">
+      <label class="result-percentage">25%</label>
 
-        <div class="option-container">
-          <span class="option-id"></span>
-          <label class="option-label">Label</label>
-        </div>
-      </div>
+      <svg class="result-circle" viewbox="0 0 200 200">
+        <circle r="0" cx="100" cy="100">
+          <animate attributeName="r" dur="2s" fill="freeze" values="0;25" calcMode="spline" keySplines="0 0.5 0.5 1" />
+        </circle>
+      </svg>
+
+      <label class="result-label">Label</label>
     </template>
   </body>
   <script defer type="module" src="js/audience.js"></script>

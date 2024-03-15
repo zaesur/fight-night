@@ -1,110 +1,94 @@
+@font-face {
+  font-family: "Roboto";
+  src: url(../assets/Roboto-Regular.ttf);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Roboto, monospace, sans-serif;
+}
+
 body,
 html {
+  padding: 0;
+  margin: 0;
   user-select: none;
   text-transform: uppercase;
-  font-size: 16px;
-}
-
-/* HD */
-@media screen and (min-width: 1080px) {
-  html {
-    font-size: 40px;
-  }
-}
-
-/* Full HD */
-@media screen and (min-width: 1920px) {
-  html {
-    font-size: 56px;
-  }
-}
-
-/* 1440p */
-@media screen and (min-width: 2560px) {
-  html {
-    font-size: 80px;
-  }
-}
-
-/* 4k HD */
-@media screen and (min-width: 3840px) {
-  html {
-    font-size: 120px;
-  }
+  font-size: 3.5vw;
 }
 
 main {
   width: 100vw;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   padding: 0.5rem;
 }
 
-#question {
-  position: absolute;
+.results {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto 20vw auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.result-empty {
+  grid-row: span 3;
+}
+
+.result-percentage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.result-circle {
   width: 100%;
-  top: 10%;
+  height: 100%;
+}
+
+.result-label {
   text-align: center;
 }
 
-#results {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
+.result-label.number {
+  position: relative;
+  left: -0.5em;
+  text-align: right;
 }
 
-#results:has(.novote) {
-  overflow: hidden;
-}
-
-.result {
-  height: 100%;
+.options {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: space-around;
+  align-content: center;
+}
+
+.option-label,
+.option-question {
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.option-id {
+  line-height: 0;
+  font-size: 3rem;
+  vertical-align: -0.3rem;
+}
+
+.center {
+  display: flex;
   justify-content: center;
-  flex: 1 1 0;
-  gap: 0.5rem;
 }
 
 .summary,
 .novote {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   width: 90%;
-  text-align: center;
-}
-
-.option-container {
-  text-align: center;
-  height: 2rem;
-}
-
-.option-id,
-.option-label,
-.option-percentage {
-  cursor: inherit;
-}
-
-.option-label {
-  font-size: 1rem;
-}
-
-.option-id {
-  font-size: 1.5rem;
-  vertical-align: baseline;
-  letter-spacing: 0.25rem;
-}
-
-.option-percentage {
-  font-size: 2rem;
-}
-
-.novote,
-.summary,
-#question {
-  font-size: 1.75rem;
+  height: 100%;
+  font-size: 1.25rem;
+  overflow: hidden;
 }
