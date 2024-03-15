@@ -15,6 +15,7 @@ const resultsElement = document.getElementById("results");
 const inputs = resultsElement.querySelectorAll("input");
 const resultsLabelElement = document.getElementById("results-label");
 const votesReceivedElement = document.getElementById("votes-received");
+const votesMissingElement = document.getElementById("votes-missing");
 const novotesElement = document.getElementById("novote");
 const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
@@ -260,6 +261,7 @@ const nodes = config.questions.map(
               .getResults()
               .then(({ results, votesReceived, votersActive, novotes }) => {
                 votesReceivedElement.textContent = `${votesReceived}/${votersActive} (${Math.round((votesReceived / votersActive) * 100)}%)`;
+                votesMissingElement.textContent = novotes?.length ?? 0;
                 novotesElement.value = novotes.join(", ");
 
                 for (const { optionId, votes } of results) {

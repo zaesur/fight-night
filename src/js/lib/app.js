@@ -51,6 +51,7 @@ export default class App {
 
   stopHardware = async () => {
     await this.#client.stopHardware();
+    this.keypadIds = undefined;
   };
 
   getResults = async () => {
