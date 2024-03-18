@@ -180,7 +180,7 @@ export default class App {
       `;
     };
 
-    const formatNederlands = ({ q1, q2, q3, q4, q8, q10 }) => {
+    const formatDutch = ({ q1, q2, q3, q4, q8, q10 }) => {
       const religion = q8.optionId === 1 ? "religieuze" : q8.optionId === 2 ? "spirituele" : "atheistische";
       const gender = q2.optionId === 1 ? "vrouw" : q2.optionId === 2 ? "man" : "persoon";
       const age = getMiddle(q3.optionName);
@@ -198,15 +198,15 @@ export default class App {
 
       return `
         De meerderheid is een
-        ${religion} ${gender}, ${age} jaar oud, met een inkomen van ${salary} per maand.
-        ${pronoun} is ${bias}, ${ticket} voor hun kaartje, en wilde dat de anderen weggingen.
+        ${religion} ${gender}, ${age} jaar oud en verdient ${salary} per maand.
+        ${pronoun} is ${bias}, ${ticket} voor een kaartje, en wilde dat de anderen weggingen.
       `;
     };
 
     const summary = (
       {
         "en": formatEnglish,
-        "nl": formatNederlands,
+        "nl": formatDutch,
       }[language] ?? formatEnglish
     )({ q1: q1Majority, q2: q2Majority, q3: q3Majority, q4: q4Majority, q8: q8Majority, q10: q10Majority });
 
