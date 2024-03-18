@@ -225,14 +225,17 @@ const nodes = config.questions.map(
     const legend = clone.querySelector("legend");
     const inputs = clone.querySelectorAll("input");
     const button = clone.querySelector("button");
+    const language = new URLSearchParams(window.location.search).get("language") ?? "en";
 
-    legend.textContent = `${id}: ${question}`;
+    const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
+
+    legend.textContent = `${id}: ${getByLanguage(question, language)}`;
     for (const input of inputs) {
       const optionId = input.dataset.optionId;
       const option = options[optionId];
 
       if (option) {
-        input.value = option;
+        input.value = getByLanguage(option, language);
       } else {
         input.parentElement.style.display = "none";
       }
@@ -243,7 +246,7 @@ const nodes = config.questions.map(
       event.target.disabled = true;
 
       const formData = new FormData(form);
-      formData.append("question", question);
+      formData.append("question", getByLanguage(question, language));
       formData.append("id", id);
       formData.append("activeOptions", activeOptions);
       formData.append("isAnimated", isAnimated);
