@@ -6,6 +6,7 @@ import { roundPercentages, exportToCSV } from "./lib/utils.js";
 let interval;
 const intervalTimeout = config.pollInterval;
 
+const language = new URLSearchParams(window.location.search).get("language") ?? "en";
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -157,7 +158,7 @@ summarizeButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   app
-    .publishSummary()
+    .publishSummary(language)
     .then(resetError)
     .catch(showError)
     .finally(() => {
@@ -225,7 +226,6 @@ const nodes = config.questions.map(
     const legend = clone.querySelector("legend");
     const inputs = clone.querySelectorAll("input");
     const button = clone.querySelector("button");
-    const language = new URLSearchParams(window.location.search).get("language") ?? "en";
 
     const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
 
