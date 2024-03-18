@@ -82,7 +82,8 @@ main {
 }
 
 .summary,
-.novote {
+.novote,
+.return-remotes {
   display: flex;
   justify-content: center;
   align-items: center;

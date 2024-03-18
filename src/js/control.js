@@ -7,6 +7,7 @@ let interval;
 const intervalTimeout = config.pollInterval;
 
 const language = new URLSearchParams(window.location.search).get("language") ?? "en";
+const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -22,8 +23,9 @@ const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const stopQuestionButton = document.getElementById("stop-question");
 const publishQuestionButton = document.getElementById("publish-question");
-const summarizeButton = document.getElementById("summarize");
+const summarizeButton = document.getElementById("show-summary");
 const novoteButton = document.getElementById("show-novote");
+const returnRemotesButton = document.getElementById("show-return-remotes");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const exportButton = document.getElementById("export");
@@ -179,6 +181,14 @@ novoteButton.addEventListener("click", (event) => {
     });
 });
 
+returnRemotesButton.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  const returnRemotes = getByLanguage(config.returnRemotes, language);
+
+  app.publishReturnRemotes(returnRemotes);
+});
+
 const publishButtons = document.querySelectorAll("[data-option-id]");
 for (const button of publishButtons) {
   button.addEventListener("click", (event) => {
@@ -226,8 +236,6 @@ const nodes = config.questions.map(
     const legend = clone.querySelector("legend");
     const inputs = clone.querySelectorAll("input");
     const button = clone.querySelector("button");
-
-    const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
 
     legend.textContent = `${id}: ${getByLanguage(question, language)}`;
     for (const input of inputs) {

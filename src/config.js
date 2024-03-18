@@ -25,6 +25,10 @@ export default Object.freeze({
   "apiUrl": "http://localhost:3000",
   // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
   "pollInterval": 2000,
+  "returnRemotes": {
+    "en": "Please hand in your voting device at the exit.\nThanks!",
+    "nl": "Gelieve uw stembakje in te leveren bij het verlaten van de zaal.\nBedankt!",
+  },
   "questions": [
     {
       "id": 1,

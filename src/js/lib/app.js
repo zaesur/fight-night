@@ -237,6 +237,13 @@ export default class App {
     this.#syncAudience();
   };
 
+  publishReturnRemotes = (returnRemotes) => {
+    this.audienceState = "showReturnRemotes";
+    this.returnRemotes = returnRemotes;
+
+    this.#syncAudience();
+  };
+
   #syncAudience = () => {
     this.#storage.setItem(
       "audience_state",
@@ -256,6 +263,7 @@ export default class App {
           /* Etc related data */
           summary: this.summary,
           voterIds: this.voterIds,
+          returnRemotes: this.returnRemotes,
         },
       })
     );
