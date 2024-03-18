@@ -110,6 +110,18 @@ const renderVoterIds = ({ voterIds }) => {
   mainElement.replaceChildren(element);
 };
 
+const renderReturnRemotes = ({ returnRemotes }) => {
+  bodyElement.style.backgroundColor = "white";
+  bodyElement.style.visibility = "visible";
+  mainElement.classList.remove("options", "results");
+  mainElement.classList.add("center");
+
+  const element = document.createElement("div");
+  element.classList.add("return-remotes");
+  element.textContent = returnRemotes;
+  mainElement.replaceChildren(element);
+};
+
 const render = (state, data) => {
   const map = {
     "showBlank": renderBlank,
@@ -117,6 +129,7 @@ const render = (state, data) => {
     "showResults": renderResults,
     "showSummary": renderSummary,
     "showVoterIds": renderVoterIds,
+    "showReturnRemotes": renderReturnRemotes,
   };
 
   // Necessary to show animations correctly.

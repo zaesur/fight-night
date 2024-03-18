@@ -6,6 +6,8 @@ import { roundPercentages, exportToCSV } from "./lib/utils.js";
 let interval;
 const intervalTimeout = config.pollInterval;
 
+const language = new URLSearchParams(window.location.search).get("language") ?? "en";
+const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -21,8 +23,9 @@ const startHardwareButton = document.getElementById("start-hardware");
 const stopHardwareButton = document.getElementById("stop-hardware");
 const stopQuestionButton = document.getElementById("stop-question");
 const publishQuestionButton = document.getElementById("publish-question");
-const summarizeButton = document.getElementById("summarize");
+const summarizeButton = document.getElementById("show-summary");
 const novoteButton = document.getElementById("show-novote");
+const returnRemotesButton = document.getElementById("show-return-remotes");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const exportButton = document.getElementById("export");
@@ -157,7 +160,7 @@ summarizeButton.addEventListener("click", (event) => {
   event.target.disabled = true;
 
   app
-    .publishSummary()
+    .publishSummary(language)
     .then(resetError)
     .catch(showError)
     .finally(() => {
@@ -176,6 +179,14 @@ novoteButton.addEventListener("click", (event) => {
     .finally(() => {
       event.target.disabled = false;
     });
+});
+
+returnRemotesButton.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  const returnRemotes = getByLanguage(config.returnRemotes, language);
+
+  app.publishReturnRemotes(returnRemotes);
 });
 
 const publishButtons = document.querySelectorAll("[data-option-id]");
@@ -226,13 +237,13 @@ const nodes = config.questions.map(
     const inputs = clone.querySelectorAll("input");
     const button = clone.querySelector("button");
 
-    legend.textContent = `${id}: ${question}`;
+    legend.textContent = `${id}: ${getByLanguage(question, language)}`;
     for (const input of inputs) {
       const optionId = input.dataset.optionId;
       const option = options[optionId];
 
       if (option) {
-        input.value = option;
+        input.value = getByLanguage(option, language);
       } else {
         input.parentElement.style.display = "none";
       }
@@ -243,7 +254,7 @@ const nodes = config.questions.map(
       event.target.disabled = true;
 
       const formData = new FormData(form);
-      formData.append("question", question);
+      formData.append("question", getByLanguage(question, language));
       formData.append("id", id);
       formData.append("activeOptions", activeOptions);
       formData.append("isAnimated", isAnimated);

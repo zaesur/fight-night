@@ -125,7 +125,7 @@ export default class App {
     return this.questions.find(({ id }) => questionId === id);
   };
 
-  createSummary = async () => {
+  createSummary = async (language) => {
     const getMiddle = (str) => {
       const match = str.match(/(\d+)[-—](\d+)/);
       if (match) {
@@ -157,32 +157,65 @@ export default class App {
     const q8Majority = q8?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 3 }; // Default: atheist
     const q10Majority = q10?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 4 }; // Default: no bias
 
-    const religion =
-      q8Majority.optionId === 1 ? "A religious" : q8Majority.optionId === 2 ? "A spiritual" : "An atheist";
-    const gender = q2Majority.optionId === 1 ? "woman" : q2Majority.optionId === 2 ? "man" : "person";
-    const age = getMiddle(q3Majority.optionName);
-    const salary = getMiddle(q4Majority.optionName);
-    const pronoun = q2Majority.optionId === 1 ? "She is" : q2Majority.optionId === 2 ? "He is" : "They are";
-    const bias =
-      q10Majority.optionId === 1
-        ? "a little bit racist"
-        : q10Majority.optionId === 2
-          ? "a little bit sexist"
-          : q10Majority.optionId === 3
-            ? "a little bit violent"
-            : "neither racist, sexist nor violent";
-    const ticket = q1Majority.optionId === 1 ? "paid" : "did not pay";
+    const formatEnglish = ({ q1, q2, q3, q4, q8, q10 }) => {
+      const religion = q8.optionId === 1 ? "A religious" : q8.optionId === 2 ? "A spiritual" : "An atheist";
+      const gender = q2.optionId === 1 ? "woman" : q2.optionId === 2 ? "man" : "person";
+      const age = getMiddle(q3.optionName);
+      const salary = getMiddle(q4.optionName);
+      const pronoun = q2.optionId === 1 ? "She is" : q2.optionId === 2 ? "He is" : "They are";
+      const bias =
+        q10.optionId === 1
+          ? "a little bit racist"
+          : q10.optionId === 2
+            ? "a little bit sexist"
+            : q10.optionId === 3
+              ? "a little bit violent"
+              : "neither racist, sexist nor violent";
+      const ticket = q1.optionId === 1 ? "paid" : "did not pay";
 
-    return `
-      The majority is
-      ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
-      ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to leave.
-    `;
+      return `
+        The majority is
+        ${religion} ${gender}, ${age} years old, who makes ${salary} a month.
+        ${pronoun} ${bias}, ${ticket} for a ticket, and wanted the others to leave.
+      `;
+    };
+
+    const formatDutch = ({ q1, q2, q3, q4, q8, q10 }) => {
+      const religion = q8.optionId === 1 ? "religieuze" : q8.optionId === 2 ? "spirituele" : "atheistische";
+      const gender = q2.optionId === 1 ? "vrouw" : q2.optionId === 2 ? "man" : "persoon";
+      const age = getMiddle(q3.optionName);
+      const salary = getMiddle(q4.optionName);
+      const pronoun = q2.optionId === 1 ? "Zij" : q2.optionId === 2 ? "Hij" : "Hen";
+      const bias =
+        q10.optionId === 1
+          ? "een beetje racistisch"
+          : q10.optionId === 2
+            ? "een beetje seksistisch"
+            : q10.optionId === 3
+              ? "een beetje geweldadig"
+              : "noch racistisch, seksistisch of geweldadig";
+      const ticket = q1.optionId === 1 ? "betaalde wel" : "betaalde niet";
+
+      return `
+        De meerderheid is een
+        ${religion} ${gender}, ${age} jaar oud en verdient ${salary} per maand.
+        ${pronoun} is ${bias}, ${ticket} voor een kaartje, en wilde dat de anderen weggingen.
+      `;
+    };
+
+    const summary = (
+      {
+        "en": formatEnglish,
+        "nl": formatDutch,
+      }[language] ?? formatEnglish
+    )({ q1: q1Majority, q2: q2Majority, q3: q3Majority, q4: q4Majority, q8: q8Majority, q10: q10Majority });
+
+    return summary;
   };
 
-  publishSummary = async () => {
+  publishSummary = async (language) => {
     this.audienceState = "showSummary";
-    this.summary = await this.createSummary();
+    this.summary = await this.createSummary(language);
     this.#syncAudience();
   };
 
@@ -201,6 +234,13 @@ export default class App {
     const nonVoters = await this.getNoVotes(18);
 
     this.voterIds = nonVoters;
+    this.#syncAudience();
+  };
+
+  publishReturnRemotes = (returnRemotes) => {
+    this.audienceState = "showReturnRemotes";
+    this.returnRemotes = returnRemotes;
+
     this.#syncAudience();
   };
 
@@ -223,6 +263,7 @@ export default class App {
           /* Etc related data */
           summary: this.summary,
           voterIds: this.voterIds,
+          returnRemotes: this.returnRemotes,
         },
       })
     );
