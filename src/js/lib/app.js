@@ -3,10 +3,14 @@ import QuestionFactory from "./questionFactory.js";
  * @typedef {import("./client.js").Client} Client
  */
 
-export default class App {
+export default class App extends EventTarget {
   #client;
   #storage;
   #factory;
+
+  /* Event names */
+  START_HARDWARE = "start-hardware";
+  STOP_HARDWARE = "stop-hardware";
 
   activeQuestion;
   questions;
@@ -20,6 +24,7 @@ export default class App {
    * @memberof App
    */
   constructor(client, storage) {
+    super();
     this.#client = client;
     this.#storage = storage;
     this.#factory = new QuestionFactory(client, storage);
@@ -47,11 +52,13 @@ export default class App {
 
   startHardware = async (minKeypadId, maxKeypadId) => {
     await this.#client.startHardware(minKeypadId, maxKeypadId);
+    this.dispatchEvent(new CustomEvent(this.START_HARDWARE));
   };
 
   stopHardware = async () => {
     await this.#client.stopHardware();
     this.keypadIds = undefined;
+    this.dispatchEvent(new CustomEvent(this.STOP_HARDWARE));
   };
 
   getResults = async () => {

@@ -11,6 +11,82 @@ const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
+const onEventError = (event) => (error) => {
+  event.target.disabled = false;
+  throw error;
+};
+
+const Control = {
+  $: {
+    /* Stopping/starting the hardware. */
+    status: document.getElementById("status"),
+    startHardware: document.getElementById("start-hardware"),
+    stopHardware: document.getElementById("stop-hardware"),
+    keypadMin: document.getElementById("min-keypad-id"),
+    keypadMax: document.getElementById("max-keypad-id"),
+
+    error: document.getElementById("error"),
+    results: document.getElementById("results"),
+    inputs: document.querySelectorAll("#results input"),
+    resultsLabel: document.getElementById("results-label"),
+    stopQuestion: document.getElementById("stop-question"),
+    publishQuestion: document.getElementById("publish-question"),
+    export: document.getElementById("export"),
+
+    /* Different screens. */
+    showWhiteBackground: document.getElementById("set-white"),
+    showBlackBackground: document.getElementById("set-black"),
+    summarize: document.getElementById("summarize"),
+    votesReceived: document.getElementById("votes-received"),
+    novote: document.getElementById("show-novote"),
+
+    /* Get */
+    getKeypadMin: () => parseInt(Control.$.keypadMin.value),
+    getKeypadMax: () => parseInt(Control.$.keypadMax.value),
+  },
+
+  appEventHandlers: {
+    onHardwareStart() {
+      Control.$.stopHardware.disabled = false;
+    },
+
+    onHardwareStop() {
+      Control.$.startHardware.disabled = false;
+    },
+  },
+
+  buttonEventHandlers: {
+    onHardwareStart(event) {
+      event.target.disabled = true;
+      const keypadMin = Control.$.getKeypadMin();
+      const keypadMax = Control.$.getKeypadMax();
+      app.startHardware(keypadMin, keypadMax).catch(onEventError(event));
+    },
+
+    onHardwareStop(event) {
+      event.target.disabled = true;
+      app.stopHardware().catch(onEventError(event));
+    },
+  },
+
+  bindAppEvents() {
+    app.addEventListener(app.START_HARDWARE, Control.appEventHandlers.onHardwareStart);
+    app.addEventListener(app.STOP_HARDWARE, Control.appEventHandlers.onHardwareStop);
+  },
+
+  bindButtonEvents() {
+    Control.$.startHardware.addEventListener("click", Control.buttonEventHandlers.onHardwareStart);
+    Control.$.stopHardware.addEventListener("click", Control.buttonEventHandlers.onHardwareStop);
+  },
+
+  init() {
+    Control.bindAppEvents();
+    Control.bindButtonEvents();
+  },
+};
+
+Control.init();
+
 const statusElement = document.getElementById("status");
 const errorElement = document.getElementById("error");
 const resultsElement = document.getElementById("results");
@@ -29,8 +105,6 @@ const returnRemotesButton = document.getElementById("show-return-remotes");
 const whiteButton = document.getElementById("set-white");
 const blackButton = document.getElementById("set-black");
 const exportButton = document.getElementById("export");
-const keypadMinField = document.getElementById("min-keypad-id");
-const keypadMaxField = document.getElementById("max-keypad-id");
 
 const resetError = () => {
   errorElement.textContent = "";
@@ -45,36 +119,36 @@ const showError = (error) => {
   }
 };
 
-const pollHardware = () => {
-  statusElement.classList.remove("active", "inactive");
+// const pollHardware = () => {
+//   statusElement.classList.remove("active", "inactive");
 
-  app
-    .pollHardware()
-    .then((hardwareActive) => {
-      if (hardwareActive) {
-        statusElement.classList.add("active");
-        startHardwareButton.disabled = true;
-        stopHardwareButton.disabled = false;
-        keypadMinField.disabled = true;
-        keypadMaxField.disabled = true;
-      } else {
-        statusElement.classList.add("inactive");
-        startHardwareButton.disabled = false;
-        stopHardwareButton.disabled = true;
-        keypadMinField.disabled = false;
-        keypadMaxField.disabled = false;
-      }
-    })
-    .catch(() => {
-      startHardwareButton.disabled = true;
-      stopHardwareButton.disabled = true;
-      keypadMinField.disabled = false;
-      keypadMaxField.disabled = false;
-    })
-    .finally(() => {
-      window.setTimeout(pollHardware, intervalTimeout);
-    });
-};
+//   app
+//     .pollHardware()
+//     .then((hardwareActive) => {
+//       if (hardwareActive) {
+//         statusElement.classList.add("active");
+//         startHardwareButton.disabled = true;
+//         stopHardwareButton.disabled = false;
+//         keypadMinField.disabled = true;
+//         keypadMaxField.disabled = true;
+//       } else {
+//         statusElement.classList.add("inactive");
+//         startHardwareButton.disabled = false;
+//         stopHardwareButton.disabled = true;
+//         keypadMinField.disabled = false;
+//         keypadMaxField.disabled = false;
+//       }
+//     })
+//     .catch(() => {
+//       startHardwareButton.disabled = true;
+//       stopHardwareButton.disabled = true;
+//       keypadMinField.disabled = false;
+//       keypadMaxField.disabled = false;
+//     })
+//     .finally(() => {
+//       window.setTimeout(pollHardware, intervalTimeout);
+//     });
+// };
 
 resultsElement.addEventListener("input", () => {
   const formData = new FormData(resultsElement);
@@ -94,26 +168,6 @@ resultsElement.addEventListener("input", () => {
 
 // Fires the event to calculate percentages on first load.
 resultsElement.dispatchEvent(new Event("input"));
-
-// On start hardware input.
-startHardwareButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app
-    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value))
-    .then(pollHardware)
-    .then(resetError)
-    .catch(showError);
-});
-
-// On stop hardware input.
-stopHardwareButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app.stopHardware().then(pollHardware).then(resetError).catch(showError);
-});
 
 // On stop question input.
 stopQuestionButton.addEventListener("click", (event) => {
@@ -299,4 +353,4 @@ const nodes = config.questions.map(
 );
 
 questionsElement.replaceChildren(...nodes);
-pollHardware();
+// pollHardware();
