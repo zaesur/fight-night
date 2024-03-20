@@ -3,7 +3,6 @@ import App from "./lib/app.js";
 import Client from "./lib/client.js";
 import { exportToCSV } from "./lib/utils.js";
 
-let stopListener;
 const language = new URLSearchParams(window.location.search).get("language") ?? "en";
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
@@ -106,6 +105,26 @@ const Control = {
   },
 
   appEventHandlers: {
+    onInit(event) {
+      const state = event.detail.state;
+
+      if (state.hardwareIsActive) {
+        const minKeypadId = 0;
+        const maxKeypadId = 5;
+        Control.appEventHandlers.onHardwareStart({ detail: { minKeypadId, maxKeypadId } });
+      } else {
+        Control.appEventHandlers.onHardwareStop();
+      }
+
+      if (state.questionIsActive) {
+        Control.listeners.startCheckResults();
+        Control.$.stopQuestion.disabled = false;
+        Control.$.cancelQuestion.disabled = false;
+      } else {
+        Control.$.enableAllStartButtons();
+      }
+    },
+
     onHardwareStart(event) {
       Control.$.startHardware.disabled = true;
       Control.$.stopHardware.disabled = false;
@@ -223,7 +242,14 @@ const Control = {
       app
         .getResults(signal)
         .then(Control.$.setResults)
-        .catch(console.log)
+        .catch((error) => {
+          if (typeof error === DOMException && error.name === "AbortError") {
+            // If it is the aborted promise don't do anything.
+            return;
+          }
+
+          throw error;
+        })
         .finally(() => {
           pointer = window.setTimeout(Control.startCheckResults, config.pollInterval);
         });
@@ -278,6 +304,7 @@ const Control = {
   },
 
   bindAppEvents() {
+    app.addEventListener(app.INIT, Control.appEventHandlers.onInit);
     app.addEventListener(app.START_HARDWARE, Control.appEventHandlers.onHardwareStart);
     app.addEventListener(app.STOP_HARDWARE, Control.appEventHandlers.onHardwareStop);
     app.addEventListener(app.START_QUESTION, Control.appEventHandlers.onStartQuestion);

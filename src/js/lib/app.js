@@ -10,6 +10,7 @@ export default class App extends EventTarget {
   #factory;
 
   /* Event names */
+  INIT = "init";
   START_HARDWARE = "start-hardware";
   STOP_HARDWARE = "stop-hardware";
   START_QUESTION = "start-question";
@@ -44,19 +45,16 @@ export default class App extends EventTarget {
   init = async () => {
     const state = await this.getState();
 
-    if (state.hardwareIsActive) {
-      const minKeypadId = state.keypadIds.at(0);
-      const maxKeypadId = state.keypadIds.at(-1);
-      this.#dispatchStartHardware(minKeypadId, maxKeypadId);
-    } else {
-      this.#dispatchStopHardware();
-    }
+    this.#dispatchInitEvent(state);
+  };
 
-    if (state.questionIsActive) {
-      this.#dispatchStartQuestion(this.activeQuestion.name);
-    } else {
-      this.#dispatchStopQuestion([]);
-    }
+  /**
+   * Dispatch init event.
+   * @param {*} state
+   * @memberof App
+   */
+  #dispatchInitEvent = (state) => {
+    this.dispatchEvent(new CustomEvent(this.INIT, { detail: { state } }));
   };
 
   /**
