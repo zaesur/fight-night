@@ -49,6 +49,7 @@ const Control = {
     getKeypadMax: () => parseInt(Control.$.keypadMax.value),
     getStartButtons: () => document.querySelectorAll("[data-id='button']"),
     getPublishButtons: () => document.querySelectorAll("[data-id='publish']"),
+    getResultField: (id) => document.querySelector(`[data-id='votes'][data-option-id='${id}']`),
     getResultFields: () => document.querySelectorAll("[data-id='votes']"),
     getQuestion: (id) => document.querySelector(`[data-question-id='${id}']`),
     getOptions: (id) => Control.$.getQuestion(id).querySelectorAll("[data-option-id]"),
@@ -66,6 +67,22 @@ const Control = {
       };
     },
 
+    getResults() {
+      const inputs = Control.$.getResultFields();
+
+      const results = inputs.map((input) => {
+        const id = parseInt(input.dataset.optionId);
+        const result = parseInt(input.value);
+      });
+    },
+
+    setResults(options) {
+      for (const option of options) {
+        const input = Control.$.getResultField(option.optionId);
+        input.value = option.votes;
+      }
+    },
+
     /* Toggles */
     enableAllStartButtons: () => Control.$.getStartButtons().forEach(enable),
     disableAllStartButtons: () => Control.$.getStartButtons().forEach(disable),
@@ -79,6 +96,9 @@ const Control = {
       Control.$.stopQuestion.disabled = true;
       Control.$.disableAllPublishButtons();
       Control.$.disableAllResultFields();
+      Control.$.getResultFields().forEach((field) => {
+        field.value = 0;
+      });
     },
   },
 
@@ -117,9 +137,10 @@ const Control = {
       }
     },
 
-    onStopQuestion() {
+    onStopQuestion(event) {
       Control.$.enableAllResultFields();
       Control.$.enableAllPublishButtons();
+      Control.$.setResults(event.detail.options);
     },
   },
 
@@ -256,6 +277,8 @@ const Control = {
     }
   },
 
+  bindInputEvents() {},
+
   translateConfig(language) {
     const translate = (obj, property) => {
       if (typeof obj[property] === "object") {
@@ -278,6 +301,7 @@ const Control = {
     Control.render();
     Control.bindAppEvents();
     Control.bindButtonEvents();
+    Control.bindInputEvents();
   },
 };
 

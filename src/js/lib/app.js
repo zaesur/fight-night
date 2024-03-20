@@ -55,7 +55,7 @@ export default class App extends EventTarget {
     if (state.questionIsActive) {
       this.#dispatchStartQuestion(this.activeQuestion.name);
     } else {
-      this.#dispatchStopQuestion();
+      this.#dispatchStopQuestion(this.activeQuestion.options);
     }
   };
 
@@ -108,8 +108,12 @@ export default class App extends EventTarget {
   /**
    * Dispatch stop question event.
    */
-  #dispatchStopQuestion = () => {
-    this.dispatchEvent(new CustomEvent(this.STOP_QUESTION));
+  #dispatchStopQuestion = (options) => {
+    if (options === undefined) {
+      throw "Must provide options!";
+    }
+
+    this.dispatchEvent(new CustomEvent(this.STOP_QUESTION, { detail: { options } }));
   };
 
   getQuestionById = (questionId) => {
@@ -192,7 +196,7 @@ export default class App extends EventTarget {
    */
   stopQuestion = async () => {
     await this.activeQuestion.close();
-    this.#dispatchStopQuestion();
+    this.#dispatchStopQuestion(this.activeQuestion.options);
   };
 
   /**

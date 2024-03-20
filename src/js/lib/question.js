@@ -44,13 +44,12 @@ export default class Question {
     this.isAnimated = isAnimated;
     this.showQuestion = showQuestion;
     this.showOnlyOptionId = showOnlyOptionId;
-
-    this.#save();
   }
 
   start = async () => {
     await this.#client.startQuestion(this.activeOptions);
     this.isClosed = false;
+    this.#save();
   };
 
   close = async () => {
