@@ -32,6 +32,7 @@ const Control = {
     inputs: document.querySelectorAll("#results input"),
     resultsLabel: document.getElementById("results-label"),
     votesReceived: document.getElementById("votes-received"),
+    votesMissing: document.getElementById("votes-missing"),
     stopQuestion: document.getElementById("stop-question"),
     publishQuestion: document.getElementById("publish-question"),
     cancelQuestion: document.getElementById("cancel-question"),
@@ -49,6 +50,8 @@ const Control = {
     getKeypadMax: () => parseInt(Control.$.keypadMax.value),
     getStartButtons: () => document.querySelectorAll("[data-id='button']"),
     getPublishButtons: () => document.querySelectorAll("[data-id='publish']"),
+    getPercentageField: (id) => document.querySelector(`[data-id='percentage'][data-option-id='${id}']`),
+    getPercentageFields: (id) => document.querySelectorAll(`[data-id='percentage']`),
     getResultField: (id) => document.querySelector(`[data-id='votes'][data-option-id='${id}']`),
     getResultFields: () => document.querySelectorAll("[data-id='votes']"),
     getQuestion: (id) => document.querySelector(`[data-question-id='${id}']`),
@@ -70,7 +73,9 @@ const Control = {
     setResults(options) {
       for (const option of options) {
         const input = Control.$.getResultField(option.optionId);
+        const percentage = Control.$.getPercentageField(option.optionId);
         input.value = option.votes;
+        percentage.textContent = `${option.percentage}%`;
       }
     },
 
@@ -87,9 +92,8 @@ const Control = {
       Control.$.stopQuestion.disabled = true;
       Control.$.disableAllPublishButtons();
       Control.$.disableAllResultFields();
-      Control.$.getResultFields().forEach((field) => {
-        field.value = 0;
-      });
+      Control.$.getResultFields().forEach((field) => (field.value = 0));
+      Control.$.getPercentageFields().forEach((field) => (field.textContent = ""));
     },
   },
 

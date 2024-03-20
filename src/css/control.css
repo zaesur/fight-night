@@ -21,7 +21,7 @@ main {
 }
 
 .left-column {
-  flex-grow: 3;
+  flex-grow: 2;
   height: 100%;
 }
 
@@ -36,17 +36,23 @@ main {
 }
 
 .options {
+  width: 100%;
   display: flex;
   justify-content: center;
   flex-direction: column;
 }
 
-.options button {
+.options [data-id="button"] {
   margin-top: 1rem;
 }
 
-#error {
-  height: 4rem;
+.options [data-id="label"]::after {
+  content: ":";
+}
+
+[data-id="percentage"] {
+  display: inline-block;
+  min-width: 2rem;
 }
 
 #results {

@@ -12,13 +12,13 @@ export default class QuestionFactory {
 
   /**
    * Load active question and questions from storage.
-   * @returns { [Question | undefined, Questions[]]}
+   * @returns { [Question | undefined, Question[]]}
    * @memberof QuestionFactory
    */
   loadAll = () => {
     const questions = Object.entries(this.#storage)
-      .filter(([storageKey]) => storageKey.startsWith("question"))
-      .map(([_, value]) => JSON.parse(value))
+      .filter(([storageKey, _]) => storageKey.startsWith("question"))
+      .map(([_, value]) => this.fromJSON(JSON.parse(value)))
       .reduce(
         (all, question) => ({
           ...all,
@@ -40,12 +40,7 @@ export default class QuestionFactory {
    * @param { QuestionJSON } json
    * @memberof Question
    */
-  fromJSON = ({ id, name, options, activeOptions, rawResults, isAnimated, showQuestion, showOnlyOptionId }) => {
-    return new Question(this.#client, this.#storage, id, name, options, activeOptions, {
-      rawResults,
-      isAnimated,
-      showQuestion,
-      showOnlyOptionId,
-    });
+  fromJSON = ({ id, name, options, activeOptions, ...init }) => {
+    return new Question(this.#client, this.#storage, id, name, options, activeOptions, init);
   };
 }
