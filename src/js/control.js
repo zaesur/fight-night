@@ -9,6 +9,10 @@ const app = new App(client, window.localStorage);
 
 const disable = (el) => (el.disabled = true);
 const enable = (el) => (el.disabled = false);
+const disableTemporarily = (el, ms) => {
+  el.disabled = true;
+  new Promise((r) => setTimeout(r, ms)).finally(() => (el.disabled = false));
+};
 const onEventError = (event) => (error) => {
   event.target.disabled = false;
   throw error;
@@ -31,12 +35,12 @@ const Control = {
     results: document.getElementById("results"),
     inputs: document.querySelectorAll("#results input"),
     resultsLabel: document.getElementById("results-label"),
-    votesReceived: document.getElementById("votes-received"),
-    votesMissing: document.getElementById("votes-missing"),
+    votesTotal: document.getElementById("votes-total"),
     stopQuestion: document.getElementById("stop-question"),
     publishQuestion: document.getElementById("publish-question"),
     cancelQuestion: document.getElementById("cancel-question"),
     export: document.getElementById("export"),
+    novote: document.getElementById("novote"),
 
     /* Different screens. */
     showWhiteBackground: document.getElementById("set-white"),
@@ -51,7 +55,7 @@ const Control = {
     getStartButtons: () => document.querySelectorAll("[data-id='button']"),
     getPublishButtons: () => document.querySelectorAll("[data-id='publish']"),
     getPercentageField: (id) => document.querySelector(`[data-id='percentage'][data-option-id='${id}']`),
-    getPercentageFields: (id) => document.querySelectorAll(`[data-id='percentage']`),
+    getPercentageFields: () => document.querySelectorAll(`[data-id='percentage']`),
     getResultField: (id) => document.querySelector(`[data-id='votes'][data-option-id='${id}']`),
     getResultFields: () => document.querySelectorAll("[data-id='votes']"),
     getQuestion: (id) => document.querySelector(`[data-question-id='${id}']`),
@@ -79,6 +83,16 @@ const Control = {
       }
     },
 
+    setTotal(votesMissing, votesTotal) {
+      const votesReceived = votesTotal - votesMissing;
+      const percentage = Math.round((votesReceived / votesTotal) * 100);
+      Control.$.votesTotal.textContent = `${votesReceived}/${votesTotal} (${percentage}%)`;
+    },
+
+    setNoVote(votesMissing) {
+      Control.$.novote.textContent = votesMissing.join(", ");
+    },
+
     /* Toggles */
     enableAllStartButtons: () => Control.$.getStartButtons().forEach(enable),
     disableAllStartButtons: () => Control.$.getStartButtons().forEach(disable),
@@ -94,6 +108,8 @@ const Control = {
       Control.$.disableAllResultFields();
       Control.$.getResultFields().forEach((field) => (field.value = 0));
       Control.$.getPercentageFields().forEach((field) => (field.textContent = ""));
+      Control.$.novote.textContent = "";
+      Control.$.votesTotal.textContent = "";
     },
   },
 
@@ -157,6 +173,8 @@ const Control = {
       Control.$.enableAllResultFields();
       Control.$.enableAllPublishButtons();
       Control.$.setResults(event.detail.options);
+      Control.$.setTotal(event.detail.missingKeypadIds.length, event.detail.keypadIds.length);
+      Control.$.setNoVote(event.detail.missingKeypadIds);
     },
   },
 
@@ -200,28 +218,32 @@ const Control = {
     },
 
     onPublishSummary(event) {
-      event.target.disabled = true;
-      app.publishSummary(language).catch(onEventError(event));
+      disableTemporarily(event.target, 300);
+      app.publishSummary(language);
     },
 
     onPublishNovote(event) {
-      event.target.disabled = true;
-      app.publishVoterIds().then(onEventError(event));
+      disableTemporarily(event.target, 300);
+      app.publishVoterIds();
     },
 
-    onPublishReturnRemotes() {
-      app.publishReturnRemotes(config.returnRemotes);
+    onPublishReturnRemotes(event) {
+      disableTemporarily(event.target, 300);
+      app.showReturnRemotes(config.showReturnRemotes);
     },
 
-    onShowWhiteBackground() {
+    onShowWhiteBackground(event) {
+      disableTemporarily(event.target, 300);
       app.setBackgroundColor("white");
     },
 
-    onShowBlackBackground() {
+    onShowBlackBackground(event) {
+      disableTemporarily(event.target, 300);
       app.setBackgroundColor("black");
     },
 
-    onExport() {
+    onExport(event) {
+      disableTemporarily(event.target, 300);
       exportToCSV();
     },
   },
@@ -244,7 +266,11 @@ const Control = {
 
       app
         .getResults(signal)
-        .then(Control.$.setResults)
+        .then(({ options, missingKeypadIds, keypadIds }) => {
+          Control.$.setResults(options);
+          Control.$.setTotal(missingKeypadIds.length, keypadIds.length);
+          Control.$.setNoVote(missingKeypadIds);
+        })
         .catch((error) => {
           if (typeof error === DOMException && error.name === "AbortError") {
             // If it is the aborted promise don't do anything.

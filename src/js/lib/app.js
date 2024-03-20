@@ -112,7 +112,11 @@ export default class App extends EventTarget {
       throw "Must provide options!";
     }
 
-    this.dispatchEvent(new CustomEvent(this.STOP_QUESTION, { detail: { options } }));
+    this.dispatchEvent(
+      new CustomEvent(this.STOP_QUESTION, {
+        detail: { options, missingKeypadIds: this.getNoVotes(), keypadIds: this.keypadIds },
+      })
+    );
   };
 
   getQuestionById = (questionId) => {
@@ -171,7 +175,7 @@ export default class App extends EventTarget {
   getResults = async (signal) => {
     await this.activeQuestion.refresh(signal);
 
-    return this.activeQuestion.options;
+    return { options: this.activeQuestion.options, missingKeypadIds: this.getNoVotes(), keypadIds: this.keypadIds };
   };
 
   setResults = (optionId, votes) => {
@@ -217,7 +221,7 @@ export default class App extends EventTarget {
     this.#dispatchPublishQuestion(this.activeQuestion.optionsShown.length === this.activeQuestion.options.length);
   };
 
-  createSummary = async (language) => {
+  createSummary = (language) => {
     const getMiddle = (str) => {
       const match = str.match(/(\d+)[-—](\d+)/);
       if (match) {
@@ -304,16 +308,16 @@ export default class App extends EventTarget {
     return summary;
   };
 
-  publishSummary = async (language) => {
+  publishSummary = (language) => {
     this.audienceState = "showSummary";
-    this.summary = await this.createSummary(language);
+    this.summary = this.createSummary(language);
     this.#syncAudience();
   };
 
-  getNoVotes = async (id) => {
-    const question = this.getQuestionById(id);
+  getNoVotes = (id) => {
+    const question = this.getQuestionById(id ?? this.activeQuestion.id);
     const keypadIds = question?.rawResults?.map(({ keypadId }) => keypadId) ?? [];
-    const activeKeypadIds = this.keypadIds ?? (await this.getActiveKeypadIds());
+    const activeKeypadIds = this.keypadIds;
     const noVote = activeKeypadIds.filter((keypadId) => !keypadIds.includes(keypadId));
 
     return noVote;

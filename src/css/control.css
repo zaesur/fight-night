@@ -86,3 +86,9 @@ main {
 #status.inactive {
   background-color: red;
 }
+
+#novote {
+  resize: none;
+  width: 100%;
+  height: 5rem;
+}
