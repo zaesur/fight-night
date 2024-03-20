@@ -173,6 +173,10 @@ export default class App extends EventTarget {
     return this.activeQuestion.options;
   };
 
+  setResults = (optionId, votes) => {
+    return this.activeQuestion.setVotes(optionId, votes);
+  };
+
   /**
    * Starts a new question.
    * @param { any } questionData

@@ -67,17 +67,6 @@ const Control = {
       };
     },
 
-    getResults() {
-      const inputs = Control.$.getResultFields();
-
-      return inputs.map((input) => {
-        const id = parseInt(input.dataset.optionId);
-        const result = parseInt(input.value);
-
-        return { id, result };
-      });
-    },
-
     setResults(options) {
       for (const option of options) {
         const input = Control.$.getResultField(option.optionId);
@@ -233,6 +222,16 @@ const Control = {
     },
   },
 
+  inputEventHandlers: {
+    onResultFieldChange: (event) => {
+      const optionId = parseInt(event.target.dataset.optionId);
+      const votes = parseInt(event.target.value);
+
+      const newResults = app.setResults(optionId, votes);
+      Control.$.setResults(newResults);
+    },
+  },
+
   listeners: {
     startCheckResults: () => {
       let pointer;
@@ -330,7 +329,11 @@ const Control = {
     }
   },
 
-  bindInputEvents() {},
+  bindInputEvents() {
+    for (const field of Control.$.getResultFields()) {
+      field.addEventListener("input", Control.inputEventHandlers.onResultFieldChange);
+    }
+  },
 
   translateConfig(language) {
     const translate = (obj, property) => {

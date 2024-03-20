@@ -83,15 +83,15 @@ export default class Question {
     this.#save();
   };
 
-  // setVotes = (formData) => {
-  //   for (const [optionId, votes] of [...formData.entries()]) {
-  //     const option = this.findOptionById(parseInt(optionId));
+  setVotes = (optionId, votes) => {
+    const option = this.findOptionById(optionId);
+    option.votes = votes;
 
-  //     if (option) {
-  //       option.votes = parseInt(votes);
-  //     }
-  //   }
-  // };
+    // Recalculate
+    this.#calculatePercentages();
+
+    return this.options;
+  };
 
   /**
    * Process incoming results from the hardware.
