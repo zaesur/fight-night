@@ -107,14 +107,14 @@ export default class App extends EventTarget {
   /**
    * Dispatch stop question event.
    */
-  #dispatchStopQuestion = (options) => {
+  #dispatchStopQuestion = (id, options, missingKeypadIds, keypadIds) => {
     if (options === undefined) {
       throw "Must provide options!";
     }
 
     this.dispatchEvent(
       new CustomEvent(this.STOP_QUESTION, {
-        detail: { options, missingKeypadIds: this.getNoVotes(), keypadIds: this.keypadIds },
+        detail: { id, options, missingKeypadIds, keypadIds },
       })
     );
   };
@@ -205,7 +205,7 @@ export default class App extends EventTarget {
    */
   stopQuestion = async () => {
     await this.activeQuestion.close();
-    this.#dispatchStopQuestion(this.activeQuestion.options);
+    this.#dispatchStopQuestion(this.activeQuestion.id, this.activeQuestion.options, this.getNoVotes(), this.keypadIds);
   };
 
   /**

@@ -163,6 +163,8 @@ const Control = {
     },
 
     onPublishQuestion(event) {
+      Control.$.disableAllResultFields();
+
       if (event.detail.isComplete) {
         Control.$.disableResults();
         Control.$.enableAllStartButtons();
@@ -171,8 +173,9 @@ const Control = {
 
     onStopQuestion(event) {
       Control.$.enableAllResultFields();
-      Control.$.enableAllPublishButtons();
+      Control.$.enableAllPublishButtons(event.detail.id);
       Control.$.setResults(event.detail.options);
+      Control.checkResultsValidity(event.detail.options, app.activeQuestion.id);
       Control.$.setTotal(event.detail.missingKeypadIds.length, event.detail.keypadIds.length);
       Control.$.setNoVote(event.detail.missingKeypadIds);
     },
@@ -255,6 +258,7 @@ const Control = {
 
       const newResults = app.setResults(optionId, votes);
       Control.$.setResults(newResults);
+      Control.checkResultsValidity(newResults, app.activeQuestion.id);
     },
   },
 
@@ -288,6 +292,21 @@ const Control = {
         window.clearTimeout(pointer);
       };
     },
+  },
+
+  checkResultsValidity(options, id) {
+    const isPeopleQuestion = [5, 6, 14].includes(id);
+    const isEmpty = isPeopleQuestion && options.every((option) => option.votes === 0);
+    const isNotUnique = isPeopleQuestion && new Set(options.map((option) => option.votes)).size !== options.length;
+    const angeloIsNotLast = id === 14 && options.some((option) => option.votes < options.at(-1).votes);
+    const leaveIsNotWinning = id === 18 && options[0].votes < options[1].votes;
+
+    if (isEmpty || isNotUnique || angeloIsNotLast || leaveIsNotWinning) {
+      Control.$.disableAllPublishButtons();
+    } else {
+      Control.$.enableAllPublishButtons();
+      Control.$.publishQuestion.disabled = isPeopleQuestion;
+    }
   },
 
   renderQuestion({ id, question, options }) {
