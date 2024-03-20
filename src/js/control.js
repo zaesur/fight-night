@@ -70,9 +70,11 @@ const Control = {
     getResults() {
       const inputs = Control.$.getResultFields();
 
-      const results = inputs.map((input) => {
+      return inputs.map((input) => {
         const id = parseInt(input.dataset.optionId);
         const result = parseInt(input.value);
+
+        return { id, result };
       });
     },
 

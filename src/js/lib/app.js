@@ -55,7 +55,7 @@ export default class App extends EventTarget {
     if (state.questionIsActive) {
       this.#dispatchStartQuestion(this.activeQuestion.name);
     } else {
-      this.#dispatchStopQuestion(this.activeQuestion.options);
+      this.#dispatchStopQuestion([]);
     }
   };
 
