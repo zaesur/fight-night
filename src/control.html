@@ -15,58 +15,61 @@
           <fieldset>
             <legend>Hardware</legend>
             <span id="status"></span>
-            <input id="min-keypad-id" name="min" type="number" placeholder="min ID" min="1" />
-            <input id="max-keypad-id" name="max" type="number" placeholder="max ID" min="1" />
-            <button id="start-hardware">Start hardware</button>
-            <button id="stop-hardware">Stop hardware</button>
+            <input id="min-keypad-id" name="min" type="number" placeholder="min ID" min="1" disabled/>
+            <input id="max-keypad-id" name="max" type="number" placeholder="max ID" min="1" disabled/>
+            <button id="start-hardware"disabled>Start hardware</button>
+            <button id="stop-hardware"disabled>Stop hardware</button>
           </fieldset>
 
           <fieldset>
             <legend>Audience</legend>
-            <button id="set-white">White background</button>
-            <button id="set-black">Black background</button>
+            <div class="buttons-row">
+              <button id="set-white">White background</button>
+              <button id="set-black">Black background</button>
+            </div>
           </fieldset>
         </div>
 
-        <form id="results">
+        <div id="results">
           <fieldset>
-            <legend id="results-label">Results</legend>
+            <legend id="results-label">No question active</legend>
             <div>
               <label for="1">1:</label>
-              <input name="1" type="number" min="0" value="0" />
-              <button data-option-id="1">Publish</button>
+              <input data-id="votes" name="1" type="number" min="0" value="0" />
+              <button data-id="publish" data-option-id="1">Publish</button>
             </div>
 
             <div>
               <label for="2">2:</label>
-              <input name="2" type="number" min="0" value="0" />
-              <button data-option-id="2">Publish</button>
+              <input data-id="votes" name="2" type="number" min="0" value="0" />
+              <button data-id="publish" data-option-id="2">Publish</button>
             </div>
 
             <div>
               <label for="3">3:</label>
-              <input name="3" type="number" min="0" value="0" />
-              <button data-option-id="3">Publish</button>
+              <input data-id="votes" name="3" type="number" min="0" value="0" />
+              <button data-id="publish" data-option-id="3">Publish</button>
             </div>
 
             <div>
               <label for="4">4:</label>
-              <input name="4" type="number" min="0" value="0" />
-              <button data-option-id="4">Publish</button>
+              <input data-id="votes" name="4" type="number" min="0" value="0" />
+              <button data-id="publish" data-option-id="4">Publish</button>
             </div>
 
             <div>
               <label for="5">5:</label>
-              <input name="5" type="number" min="0" value="0" />
-              <button data-option-id="5">Publish</button>
+              <input data-id="votes" name="5" type="number" min="0" value="0" />
+              <button data-id="publish" data-option-id="5">Publish</button>
             </div>
 
             <div>Votes received: <span id="votes-received">0</span></div>
             <div>Votes missing: <span id="votes-missing">0</span></div>
 
-            <div class="results-buttons">
+            <div class="results-buttons buttons-row">
               <button id="stop-question">Close voting</button>
-              <button id="publish-question">Publish results</button>
+              <button data-id="publish" id="publish-question">Publish results</button>
+              <button id="cancel-question" class="right">Cancel</button>
             </div>
           </fieldset>
 
@@ -77,48 +80,32 @@
 
           <fieldset>
             <legend>Etc</legend>
-            <button id="show-novote">Publish novote</button>
-            <button id="show-summary">Publish summary</button>
-            <button id="show-return-remotes">Return remotes</button>
-            <button id="export">Export</button>
+            <div class="buttons-row">
+              <button id="show-novote">Publish novote</button>
+              <button id="show-summary">Publish summary</button>
+              <button id="show-return-remotes">Return remotes</button>
+              <button id="export" class="right">Export</button>
+            </div>
           </fieldset>
-
-          <fieldset>
-            <legend>Errors</legend>
-            <p id="error"></p>
-          </fieldset>
-        </form>
+        </div>
       </section>
       <section id="questions" class="column right-column" />
     </main>
 
-    <template>
-      <form>
+    <template id="question-template">
+      <div class="question">
         <fieldset class="options">
           <legend class="label">Question</legend>
-          <label>
-            1:
-            <input name="option" type="text" data-option-id="1" />
-          </label>
-          <label>
-            2:
-            <input name="option" type="text" data-option-id="2" />
-          </label>
-          <label>
-            3:
-            <input name="option" type="text" data-option-id="3" />
-          </label>
-          <label>
-            4:
-            <input name="option" type="text" data-option-id="4" />
-          </label>
-          <label>
-            5:
-            <input name="option" type="text" data-option-id="5" />
-          </label>
-          <button>Start voting</button>
+          <button data-id="button">Start voting</button>
         </fieldset>
-      </form>
+      </div>
+    </template>
+
+    <template id="input-template">
+      <div>
+        <span data-id="label">#:</span>
+        <input data-id="input"></input>
+      </div>
     </template>
   </body>
   <script defer type="module" src="js/control.js"></script>

@@ -42,7 +42,8 @@ export const exportToCSV = () => {
   const csvContent = questions.map((e) => e.join(",")).join("\n");
   const csvFile = `data:text/csv;charset=utf-8,${csvContent}`;
 
-  //download file as csv
-  const encodedUri = encodeURI(csvFile);
-  window.open(encodedUri);
+  const link = document.createElement("a");
+  link.href = encodeURI(csvFile);
+  link.download = "Results.csv";
+  link.click();
 };

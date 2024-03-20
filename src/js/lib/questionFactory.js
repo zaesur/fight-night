@@ -40,31 +40,4 @@ export default class QuestionFactory {
       showOnlyOptionId,
     });
   };
-
-  /**
-   * Used to create a Question based on form data.
-   * @static
-   * @param { Client } client
-   * @param { FormData } formData
-   * @memberof Question
-   */
-  fromForm = (formData) => {
-    const id = parseInt(formData.get("id"));
-    const question = formData.get("question");
-    const activeOptions = parseInt(formData.get("activeOptions"));
-    const isAnimated = formData.get("isAnimated") !== "undefined";
-    const showQuestion = formData.get("showQuestion") !== "undefined";
-    const showOnlyOptionId = formData.get("showOnlyOptionId") !== "undefined";
-
-    const options = formData
-      .getAll("option")
-      .map((optionName, index) => ({ optionId: index + 1, optionName }))
-      .filter(({ optionName }) => Boolean(optionName));
-
-    return new Question(this.#client, this.#storage, id, question, options, activeOptions, {
-      isAnimated,
-      showQuestion,
-      showOnlyOptionId,
-    });
-  };
 }

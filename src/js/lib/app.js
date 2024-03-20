@@ -4,6 +4,7 @@ import QuestionFactory from "./questionFactory.js";
  */
 
 export default class App extends EventTarget {
+  /* Private variables */
   #client;
   #storage;
   #factory;
@@ -11,7 +12,12 @@ export default class App extends EventTarget {
   /* Event names */
   START_HARDWARE = "start-hardware";
   STOP_HARDWARE = "stop-hardware";
+  START_QUESTION = "start-question";
+  STOP_QUESTION = "stop-question";
+  PUBLISH_QUESTION = "publish-question";
+  GET_RESULTS = "get-results";
 
+  /* State */
   activeQuestion;
   questions;
   audienceState = "showBlank";
@@ -31,7 +37,105 @@ export default class App extends EventTarget {
     [this.activeQuestion, this.questions] = this.#factory.loadAll();
   }
 
-  getActiveQuestionName = () => this.activeQuestion?.name ?? "No question active";
+  /**
+   * Initializes the system by polling the hardware.
+   * @memberof App
+   */
+  init = async () => {
+    const state = await this.getState();
+
+    if (state.hardwareIsActive) {
+      const minKeypadId = state.keypadIds.at(0);
+      const maxKeypadId = state.keypadIds.at(-1);
+      this.#dispatchStartHardware(minKeypadId, maxKeypadId);
+    } else {
+      this.#dispatchStopHardware();
+    }
+
+    if (state.questionIsActive) {
+      this.#dispatchStartQuestion(this.activeQuestion.name);
+    } else {
+      this.#dispatchStopQuestion();
+    }
+  };
+
+  /**
+   * Dispatch start hardware event.
+   * @param {number} minKeypadId
+   * @param {number} maxKeypadId
+   * @memberof App
+   */
+  #dispatchStartHardware = (minKeypadId, maxKeypadId) => {
+    if (!minKeypadId || !maxKeypadId) {
+      throw "Must provide min and max keypad Id!";
+    }
+
+    this.dispatchEvent(new CustomEvent(this.START_HARDWARE, { detail: { minKeypadId, maxKeypadId } }));
+  };
+
+  /**
+   * Dispatch stop hardware event.
+   */
+  #dispatchStopHardware = () => {
+    this.dispatchEvent(new CustomEvent(this.STOP_HARDWARE));
+  };
+
+  /**
+   * Dispatch start question event.
+   * @param {string} name
+   * @memberof App
+   */
+  #dispatchStartQuestion = (name) => {
+    if (name === undefined) {
+      throw "Must provide name!";
+    }
+
+    this.dispatchEvent(new CustomEvent(this.START_QUESTION, { detail: { name } }));
+  };
+
+  /**
+   * Dispatch publish question event.
+   * @param {boolean} isComplete
+   */
+  #dispatchPublishQuestion = (isComplete) => {
+    if (isComplete === undefined) {
+      throw "Must provide isComplete!";
+    }
+
+    this.dispatchEvent(new CustomEvent(this.PUBLISH_QUESTION, { detail: { isComplete } }));
+  };
+
+  /**
+   * Dispatch stop question event.
+   */
+  #dispatchStopQuestion = () => {
+    this.dispatchEvent(new CustomEvent(this.STOP_QUESTION));
+  };
+
+  getQuestionById = (questionId) => {
+    return this.questions[questionId];
+  };
+
+  setActiveQuestion = (question) => {
+    this.activeQuestion = question;
+    this.questions[question.id] = question;
+  };
+
+  /**
+   * Gets the current hardware state
+   * @returns { { hardwareIsActive: boolean, questionIsActive: boolean, keypadIds: Array<number> }}
+   * @memberof App
+   */
+  getState = async () => {
+    const response = await this.#client.getState();
+    this.keypadIds = response.result.keypadIds;
+
+    return {
+      hardwareIsActive: Boolean(response.result.hardware_state),
+      questionIsActive: Boolean(response.result.active_question),
+      keypadIds: response.result.keypadIds,
+    };
+  };
 
   setBackgroundColor = (color) => {
     this.audienceState = "showBlank";
@@ -39,66 +143,47 @@ export default class App extends EventTarget {
     this.#syncAudience();
   };
 
-  pollHardware = async () => {
-    const response = await this.#client.getState();
-    const isActive = Boolean(response.result["hardware_state"]);
-    const activeVoters = isActive ? response.result["keypadIds"].length : undefined;
-
-    this.isActive = isActive;
-    this.activeVoters = activeVoters;
-
-    return isActive;
-  };
-
+  /**
+   * Starts the hardware.
+   * @param {number} minKeypadId
+   * @param {number} maxKeypadId
+   * @memberof App
+   */
   startHardware = async (minKeypadId, maxKeypadId) => {
     await this.#client.startHardware(minKeypadId, maxKeypadId);
-    this.dispatchEvent(new CustomEvent(this.START_HARDWARE));
+    await this.getState();
+    this.#dispatchStartHardware(minKeypadId, maxKeypadId);
   };
 
+  /**
+   * Stops the hardware.
+   * @memberof App
+   */
   stopHardware = async () => {
     await this.#client.stopHardware();
     this.keypadIds = undefined;
-    this.dispatchEvent(new CustomEvent(this.STOP_HARDWARE));
+    this.#dispatchStopHardware();
   };
 
   getResults = async () => {
     await this.activeQuestion.refresh();
-    const novotes = await this.getNoVotes(this.activeQuestion.id);
-    return {
-      results: this.activeQuestion.options,
-      votesReceived: this.activeQuestion.votesReceived,
-      votersActive: this.activeVoters,
-      novotes,
-    };
-  };
-
-  getActiveKeypadIds = async () => {
-    const response = await this.#client.getState();
-    this.keypadIds = response.result.keypadIds;
-    return this.keypadIds;
   };
 
   /**
    * Starts a new question.
-   * @param { FormData } formData a form containing the question data
+   * @param { any } questionData
    * @memberof App
    */
-  startQuestion = async (formData) => {
-    const question = this.#factory.fromForm(formData);
+  startQuestion = async (questionData) => {
+    const question = this.#factory.fromJSON(questionData);
     await question.start();
 
     this.audienceState = "showOptions";
-    this.activeQuestion = question;
 
-    const index = this.questions.findIndex(({ id }) => question.id === id);
-    if (index >= 0) {
-      this.questions[index] = question;
-    } else {
-      this.questions.push(question);
-    }
-
-    this.activeQuestion.save();
+    this.setActiveQuestion(question);
     this.#syncAudience();
+
+    this.#dispatchStartQuestion(this.activeQuestion.name);
   };
 
   /**
@@ -106,12 +191,8 @@ export default class App extends EventTarget {
    * @memberof App
    */
   stopQuestion = async () => {
-    if (this.activeQuestion) {
-      await this.activeQuestion.close();
-      this.activeQuestion.save();
-    } else {
-      this.#client.stopQuestion();
-    }
+    await this.activeQuestion.close();
+    this.#dispatchStopQuestion();
   };
 
   /**
@@ -119,17 +200,12 @@ export default class App extends EventTarget {
    * @param { FormData } formData a form containing possibly overridden votes
    * @memberof App
    */
-  publishQuestion = async (formData, optionId) => {
+  publishQuestion = async (optionId) => {
     this.audienceState = "showResults";
-    this.activeQuestion.setVotes(formData);
-    this.activeQuestion.calculatePercentages();
     await this.activeQuestion.publish(optionId);
-    this.activeQuestion.save();
     this.#syncAudience();
-  };
 
-  findQuestionById = (questionId) => {
-    return this.questions.find(({ id }) => questionId === id);
+    this.#dispatchPublishQuestion(this.activeQuestion.optionsShown.length === this.activeQuestion.options.length);
   };
 
   createSummary = async (language) => {
@@ -145,17 +221,16 @@ export default class App extends EventTarget {
       }
     };
 
-    const q1 = this.findQuestionById(1);
-    const q2 = this.findQuestionById(2);
-    const q3 = this.findQuestionById(3);
-    const q4 = this.findQuestionById(4);
-    const q8 = this.findQuestionById(8);
-    const q10 = this.findQuestionById(10);
-    const q18 = this.findQuestionById(18);
+    const q1 = this.getQuestionById(1);
+    const q2 = this.getQuestionById(2);
+    const q3 = this.getQuestionById(3);
+    const q4 = this.getQuestionById(4);
+    const q8 = this.getQuestionById(8);
+    const q10 = this.getQuestionById(10);
+    const q18 = this.getQuestionById(18);
 
-    const activeKeypadIds = await this.getActiveKeypadIds();
     const backstageKeypadIds = q18?.filterKeypadIdsByVote([5]) ?? [];
-    const majorityKeypadIds = activeKeypadIds.filter((id) => !backstageKeypadIds.includes(id));
+    const majorityKeypadIds = this.keypadIds.filter((id) => !backstageKeypadIds.includes(id));
 
     const q1Majority = q1?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 1 }; // Default: paid
     const q2Majority = q2?.findMaxOptionByKeypadIds(majorityKeypadIds) ?? { optionId: 1 }; // Default: woman
@@ -227,7 +302,7 @@ export default class App extends EventTarget {
   };
 
   getNoVotes = async (id) => {
-    const question = this.findQuestionById(id);
+    const question = this.getQuestionById(id);
     const keypadIds = question?.rawResults?.map(({ keypadId }) => keypadId) ?? [];
     const activeKeypadIds = this.keypadIds ?? (await this.getActiveKeypadIds());
     const noVote = activeKeypadIds.filter((keypadId) => !keypadIds.includes(keypadId));

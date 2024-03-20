@@ -111,7 +111,7 @@ const Audience = {
     const element = document.createElement("div");
     element.classList.add("novote");
     element.textContent = voterIds.map((id) => String(id).padStart(3, "0")).join(", ");
-    mainElement.replaceChildren(element);
+    Audience.$.main.replaceChildren(element);
   },
 
   renderReturnRemotes({ returnRemotes }) {

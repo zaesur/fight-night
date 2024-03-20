@@ -44,6 +44,8 @@ export default class Question {
     this.isAnimated = isAnimated;
     this.showQuestion = showQuestion;
     this.showOnlyOptionId = showOnlyOptionId;
+
+    this.#save();
   }
 
   start = async () => {
@@ -53,8 +55,11 @@ export default class Question {
 
   close = async () => {
     const response = await this.#client.stopQuestion();
-    this.processResults(response.result);
     this.isClosed = true;
+
+    this.#processResults(response.result);
+    this.#calculatePercentages();
+    this.#save();
   };
 
   publish = async (optionId) => {
@@ -74,30 +79,27 @@ export default class Question {
 
   refresh = async () => {
     const response = await this.#client.getResults();
-    this.processResults(response.result);
+    this.#processResults(response.result);
+    this.#calculatePercentages();
+    this.#save();
   };
 
-  save = () => {
-    this.#storage.setItem("active_question", this.id);
-    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
-  };
+  // setVotes = (formData) => {
+  //   for (const [optionId, votes] of [...formData.entries()]) {
+  //     const option = this.findOptionById(parseInt(optionId));
 
-  setVotes = (formData) => {
-    for (const [optionId, votes] of [...formData.entries()]) {
-      const option = this.findOptionById(parseInt(optionId));
-
-      if (option) {
-        option.votes = parseInt(votes);
-      }
-    }
-  };
+  //     if (option) {
+  //       option.votes = parseInt(votes);
+  //     }
+  //   }
+  // };
 
   /**
    * Process incoming results from the hardware.
    * @param { HardwareResult[] } results
    * @memberof Question
    */
-  processResults = (results) => {
+  #processResults = (results) => {
     // Gather the results by optionId in a dictionary.
     const buckets = sortResultsByOptionId(results);
 
@@ -112,7 +114,7 @@ export default class Question {
     this.votesReceived = results.length;
   };
 
-  calculatePercentages = () => {
+  #calculatePercentages = () => {
     const total = this.options.reduce((acc, { votes }) => acc + votes, 0);
     const unrounded = this.options.map(({ votes }) => (votes / total) * 100);
     const rounded = roundPercentages(unrounded);
@@ -160,6 +162,14 @@ export default class Question {
     const option = this.findOptionById(max);
 
     return option;
+  };
+
+  /**
+   * Save the question to storage.
+   */
+  #save = () => {
+    this.#storage.setItem("active_question", this.id);
+    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
   };
 
   /**

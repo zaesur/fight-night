@@ -54,8 +54,13 @@ main {
   flex-direction: column;
 }
 
-.results-buttons {
-  margin-top: 1rem;
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons-row .right {
+  margin-left: auto;
 }
 
 #status {

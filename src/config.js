@@ -21,10 +21,10 @@
  * @typedef {{ apiUrl: str, questions: Question[] }} Config
  * @type { Config }
  */
-export default Object.freeze({
-  "apiUrl": "http://localhost:3000",
-  // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
-  "pollInterval": 2000,
+export default {
+  // "apiUrl": "http://localhost:3000",
+  "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
+  "pollInterval": 4000,
   "returnRemotes": {
     "en": "Please hand in your voting device at the exit.\nThanks!",
     "nl": "Gelieve uw stembakje in te leveren bij het verlaten van de zaal.\nBedankt!",
@@ -219,4 +219,4 @@ export default Object.freeze({
       "activeOptions": 5,
     },
   ],
-});
+};
