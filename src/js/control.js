@@ -108,6 +108,7 @@ const Control = {
       Control.$.disableAllResultFields();
       Control.$.getResultFields().forEach((field) => (field.value = 0));
       Control.$.getPercentageFields().forEach((field) => (field.textContent = ""));
+      Control.$.resultsLabel.textContent = "No question active";
       Control.$.novote.textContent = "";
       Control.$.votesTotal.textContent = "";
     },
@@ -129,8 +130,7 @@ const Control = {
         Control.listeners.startCheckResults();
         Control.$.stopQuestion.disabled = false;
         Control.$.cancelQuestion.disabled = false;
-      } else {
-        Control.$.enableAllStartButtons();
+        Control.$.disableAllStartButtons();
       }
     },
 
@@ -143,6 +143,7 @@ const Control = {
       Control.$.keypadMax.value = event.detail.maxKeypadId;
       Control.$.status.classList.add("active");
       Control.$.status.classList.remove("inactive");
+      Control.$.enableAllStartButtons();
     },
 
     onHardwareStop() {
@@ -152,6 +153,7 @@ const Control = {
       Control.$.keypadMax.disabled = false;
       Control.$.status.classList.add("inactive");
       Control.$.status.classList.remove("active");
+      Control.$.disableAllStartButtons();
     },
 
     onStartQuestion(event) {
