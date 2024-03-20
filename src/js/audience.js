@@ -3,10 +3,28 @@ const integerRangeRegex = /(?<=\d{3,})(-|—)(?=\d{3,})/;
 const formatOptionId = (optionId) =>
   `<span class="option-id">${String.fromCodePoint("①".codePointAt(0) + optionId - 1)}</span>`;
 
+/**
+ *
+ *
+ * @param {string} name
+ * @return {*}
+ */
 const formatOptionLabel = (name) => {
   // Match any two numbers of 3 digits or more connected by a dash.
   // If we have a match, insert a breakpoint before the dash.
   const match = integerRangeRegex.exec(name);
+
+  if (match) {
+    return `${name.slice(0, match.index)}<br>${name.slice(match.index)}`;
+  } else {
+    const breakPoint = name.lastIndexOf(" ");
+
+    if (breakPoint > 0) {
+      return name.substring(0, breakPoint) + "<br>" + name.substring(breakPoint);
+    } else {
+      return name;
+    }
+  }
 
   return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name.split(" ").join("<br>");
 };

@@ -138,7 +138,7 @@ export default {
         1: { "en": "Racist", "nl": "Racistisch" },
         2: { "en": "Sexist", "nl": "Seksistisch" },
         3: { "en": "Violent", "nl": "Geweldadig" },
-        4: { "en": "None", "nl": "Geen van beide" },
+        4: { "en": "None", "nl": "Geen van deze" },
       },
       "activeOptions": 4,
     },
