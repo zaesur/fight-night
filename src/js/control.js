@@ -3,6 +3,7 @@ import App from "./lib/app.js";
 import Client from "./lib/client.js";
 import { exportToCSV } from "./lib/utils.js";
 
+let stopListener;
 const language = new URLSearchParams(window.location.search).get("language") ?? "en";
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
@@ -127,6 +128,7 @@ const Control = {
 
     onStartQuestion(event) {
       Control.$.cancelQuestion.disabled = false;
+      Control.listeners.startCheckResults();
       Control.$.disableAllStartButtons();
       Control.$.stopQuestion.disabled = false;
       Control.$.resultsLabel.textContent = event.detail.name;
@@ -161,6 +163,7 @@ const Control = {
 
     onStopQuestion(event) {
       event.target.disabled = true;
+      Control.listeners.stopCheckResults?.();
       app.stopQuestion().catch(onEventError(event));
     },
 
@@ -208,6 +211,27 @@ const Control = {
 
     onExport() {
       exportToCSV();
+    },
+  },
+
+  listeners: {
+    startCheckResults: () => {
+      let pointer;
+      const controller = new AbortController();
+      const signal = controller.signal;
+
+      app
+        .getResults(signal)
+        .then(Control.$.setResults)
+        .catch(console.log)
+        .finally(() => {
+          pointer = window.setTimeout(Control.startCheckResults, config.pollInterval);
+        });
+
+      Control.listeners.stopCheckResults = () => {
+        controller.abort();
+        window.clearTimeout(pointer);
+      };
     },
   },
 

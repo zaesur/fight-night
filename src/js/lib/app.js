@@ -169,8 +169,10 @@ export default class App extends EventTarget {
     this.#dispatchStopHardware();
   };
 
-  getResults = async () => {
-    await this.activeQuestion.refresh();
+  getResults = async (signal) => {
+    await this.activeQuestion.refresh(signal);
+
+    return this.activeQuestion.options;
   };
 
   /**

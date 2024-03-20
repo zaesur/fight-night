@@ -81,8 +81,9 @@ export default class Client {
     /**
      * @returns { Promise<StateResponse> }
      */
-    () =>
+    (signal) =>
       fetch(this.#getUrl("api/state"), {
+        signal,
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -104,8 +105,9 @@ export default class Client {
     /**
      * @return { Promise<OkResponse> }
      */
-    (keyPadMin, keyPadMax) =>
+    (keyPadMin, keyPadMax, signal) =>
       fetch(this.#getUrl("api/hardware/start"), {
+        signal,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,8 +127,9 @@ export default class Client {
     /**
      * @returns { Promise<OkResponse> }
      */
-    () =>
+    (signal) =>
       fetch(this.#getUrl("api/hardware/stop"), {
+        signal,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,8 +148,9 @@ export default class Client {
     /**
      * @returns { Promise<OkResponse> }
      */
-    (items) =>
+    (items, signal) =>
       fetch(this.#getUrl("api/question/start"), {
+        signal,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -165,8 +169,9 @@ export default class Client {
     /**
      * @returns { Promise<QuestionResponse> }
      */
-    () =>
+    (signal) =>
       fetch(this.#getUrl("api/question/stop"), {
+        signal,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -186,8 +191,9 @@ export default class Client {
     /**
      * @returns { Promise<QuestionResponse> }
      */
-    () =>
+    (signal) =>
       fetch(this.#getUrl("api/question/results"), {
+        signal,
         method: "GET",
         headers: {
           "Content-Type": "application/json",

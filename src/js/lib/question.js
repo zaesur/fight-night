@@ -76,8 +76,8 @@ export default class Question {
     }
   };
 
-  refresh = async () => {
-    const response = await this.#client.getResults();
+  refresh = async (signal) => {
+    const response = await this.#client.getResults(signal);
     this.#processResults(response.result);
     this.#calculatePercentages();
     this.#save();
