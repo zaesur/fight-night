@@ -215,11 +215,14 @@ const Control = {
       app.startQuestion(data).catch(onEventError(event));
     },
 
-    onCancelQuestion() {
+    onCancelQuestion(event) {
+      event.target.disabled = true;
+      app.cancelQuestion();
       app.setBackgroundColor("white");
       Control.$.stopQuestion.disabled = true;
-      Control.$.enableAllStartButtons();
       Control.$.disableResults();
+      Control.listeners?.stopCheckResults();
+      Control.$.enableAllStartButtons();
     },
 
     onPublishSummary(event) {
@@ -286,7 +289,7 @@ const Control = {
           throw error;
         })
         .finally(() => {
-          pointer = window.setTimeout(Control.startCheckResults, config.pollInterval);
+          pointer = window.setTimeout(Control.listeners.startCheckResults, config.pollInterval);
         });
 
       Control.listeners.stopCheckResults = () => {

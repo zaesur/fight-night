@@ -169,6 +169,8 @@ export default class App extends EventTarget {
   stopHardware = async () => {
     await this.#client.stopHardware();
     this.keypadIds = undefined;
+    this.activeQuestion = undefined;
+    this.#storage.removeItem("active_question");
     this.#dispatchStopHardware();
   };
 
@@ -197,6 +199,12 @@ export default class App extends EventTarget {
     this.#syncAudience();
 
     this.#dispatchStartQuestion(this.activeQuestion.name);
+  };
+
+  cancelQuestion = async () => {
+    this.#client.stopQuestion();
+    this.activeQuestion = undefined;
+    this.#storage.removeItem("active_question");
   };
 
   /**
