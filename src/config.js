@@ -22,9 +22,9 @@
  * @type { Config }
  */
 export default {
-  // "apiUrl": "http://localhost:3000",
-  "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
-  "pollInterval": 4000,
+  "apiUrl": "http://localhost:3000",
+  // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
+  "pollInterval": 1000,
   "returnRemotes": {
     "en": "Please hand in your voting device at the exit.\nThanks!",
     "nl": "Gelieve uw stembakje in te leveren bij het verlaten van de zaal.\nBedankt!",
