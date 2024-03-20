@@ -1,3 +1,4 @@
+import config from "../../config.js";
 import Question from "./question.js";
 
 export default class QuestionFactory {
@@ -17,10 +18,17 @@ export default class QuestionFactory {
   loadAll = () => {
     const questions = Object.entries(this.#storage)
       .filter(([storageKey]) => storageKey.startsWith("question"))
-      .map(([_, value]) => this.fromJSON(JSON.parse(value)));
+      .map(([_, value]) => JSON.parse(value))
+      .reduce(
+        (all, question) => ({
+          ...all,
+          [question.id]: question,
+        }),
+        Array(config.questions.length)
+      );
 
     const activeQuestionId = parseInt(this.#storage.getItem("active_question"));
-    const activeQuestion = questions.find(({ id }) => id === activeQuestionId);
+    const activeQuestion = questions[activeQuestionId];
 
     return [activeQuestion, questions];
   };

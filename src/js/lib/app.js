@@ -1,3 +1,4 @@
+import config from "../../config.js";
 import QuestionFactory from "./questionFactory.js";
 /**
  * @typedef {import("./client.js").Client} Client
@@ -20,7 +21,7 @@ export default class App extends EventTarget {
 
   /* State */
   activeQuestion;
-  questions;
+  questions = Array(config.questions.length);
   audienceState = "showBlank";
   backgroundColor = "white";
 
