@@ -49,12 +49,16 @@ export default class Question {
   start = async () => {
     await this.#client.startQuestion(this.activeOptions);
     this.isClosed = false;
+    this.#save();
   };
 
   close = async () => {
     const response = await this.#client.stopQuestion();
-    this.processResults(response.result);
     this.isClosed = true;
+
+    this.#processResults(response.result);
+    this.#calculatePercentages();
+    this.#save();
   };
 
   publish = async (optionId) => {
@@ -72,24 +76,21 @@ export default class Question {
     }
   };
 
-  refresh = async () => {
-    const response = await this.#client.getResults();
-    this.processResults(response.result);
+  refresh = async (signal) => {
+    const response = await this.#client.getResults(signal);
+    this.#processResults(response.result);
+    this.#calculatePercentages();
+    this.#save();
   };
 
-  save = () => {
-    this.#storage.setItem("active_question", this.id);
-    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
-  };
+  setVotes = (optionId, votes) => {
+    const option = this.findOptionById(optionId);
+    option.votes = votes;
 
-  setVotes = (formData) => {
-    for (const [optionId, votes] of [...formData.entries()]) {
-      const option = this.findOptionById(parseInt(optionId));
+    // Recalculate
+    this.#calculatePercentages();
 
-      if (option) {
-        option.votes = parseInt(votes);
-      }
-    }
+    return this.options;
   };
 
   /**
@@ -97,7 +98,7 @@ export default class Question {
    * @param { HardwareResult[] } results
    * @memberof Question
    */
-  processResults = (results) => {
+  #processResults = (results) => {
     // Gather the results by optionId in a dictionary.
     const buckets = sortResultsByOptionId(results);
 
@@ -112,7 +113,7 @@ export default class Question {
     this.votesReceived = results.length;
   };
 
-  calculatePercentages = () => {
+  #calculatePercentages = () => {
     const total = this.options.reduce((acc, { votes }) => acc + votes, 0);
     const unrounded = this.options.map(({ votes }) => (votes / total) * 100);
     const rounded = roundPercentages(unrounded);
@@ -160,6 +161,14 @@ export default class Question {
     const option = this.findOptionById(max);
 
     return option;
+  };
+
+  /**
+   * Save the question to storage.
+   */
+  #save = () => {
+    this.#storage.setItem("active_question", this.id);
+    this.#storage.setItem(`question_${this.id}`, JSON.stringify(this));
   };
 
   /**

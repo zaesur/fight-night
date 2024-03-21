@@ -1,302 +1,419 @@
 import config from "../config.js";
 import App from "./lib/app.js";
-import Client, { ClientError } from "./lib/client.js";
-import { roundPercentages, exportToCSV } from "./lib/utils.js";
-
-let interval;
-const intervalTimeout = config.pollInterval;
+import Client from "./lib/client.js";
+import { exportToCSV } from "./lib/utils.js";
 
 const language = new URLSearchParams(window.location.search).get("language") ?? "en";
-const getByLanguage = (obj, language) => (typeof obj === "object" ? obj[language] : obj);
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
-const statusElement = document.getElementById("status");
-const errorElement = document.getElementById("error");
-const resultsElement = document.getElementById("results");
-const inputs = resultsElement.querySelectorAll("input");
-const resultsLabelElement = document.getElementById("results-label");
-const votesReceivedElement = document.getElementById("votes-received");
-const votesMissingElement = document.getElementById("votes-missing");
-const novotesElement = document.getElementById("novote");
-const startHardwareButton = document.getElementById("start-hardware");
-const stopHardwareButton = document.getElementById("stop-hardware");
-const stopQuestionButton = document.getElementById("stop-question");
-const publishQuestionButton = document.getElementById("publish-question");
-const summarizeButton = document.getElementById("show-summary");
-const novoteButton = document.getElementById("show-novote");
-const returnRemotesButton = document.getElementById("show-return-remotes");
-const whiteButton = document.getElementById("set-white");
-const blackButton = document.getElementById("set-black");
-const exportButton = document.getElementById("export");
-const keypadMinField = document.getElementById("min-keypad-id");
-const keypadMaxField = document.getElementById("max-keypad-id");
-
-const resetError = () => {
-  errorElement.textContent = "";
+const disable = (el) => (el.disabled = true);
+const enable = (el) => (el.disabled = false);
+const disableTemporarily = (el, ms) => {
+  el.disabled = true;
+  new Promise((r) => setTimeout(r, ms)).finally(() => (el.disabled = false));
+};
+const onEventError = (event) => (error) => {
+  event.target.disabled = false;
+  throw error;
 };
 
-const showError = (error) => {
-  if (error instanceof ClientError) {
-    const message = `${error.message}: ${error.reason}`;
-    errorElement.textContent = message;
-  } else {
-    throw error;
-  }
-};
+const Control = {
+  $: {
+    questions: document.getElementById("questions"),
+    questionTemplate: document.getElementById("question-template"),
+    inputTemplate: document.getElementById("input-template"),
 
-const pollHardware = () => {
-  statusElement.classList.remove("active", "inactive");
+    /* Stopping/starting the hardware. */
+    status: document.getElementById("status"),
+    startHardware: document.getElementById("start-hardware"),
+    stopHardware: document.getElementById("stop-hardware"),
+    keypadMin: document.getElementById("min-keypad-id"),
+    keypadMax: document.getElementById("max-keypad-id"),
 
-  app
-    .pollHardware()
-    .then((hardwareActive) => {
-      if (hardwareActive) {
-        statusElement.classList.add("active");
-        startHardwareButton.disabled = true;
-        stopHardwareButton.disabled = false;
-        keypadMinField.disabled = true;
-        keypadMaxField.disabled = true;
-      } else {
-        statusElement.classList.add("inactive");
-        startHardwareButton.disabled = false;
-        stopHardwareButton.disabled = true;
-        keypadMinField.disabled = false;
-        keypadMaxField.disabled = false;
+    error: document.getElementById("error"),
+    results: document.getElementById("results"),
+    inputs: document.querySelectorAll("#results input"),
+    resultsLabel: document.getElementById("results-label"),
+    votesTotal: document.getElementById("votes-total"),
+    stopQuestion: document.getElementById("stop-question"),
+    publishQuestion: document.getElementById("publish-question"),
+    cancelQuestion: document.getElementById("cancel-question"),
+    export: document.getElementById("export"),
+    novote: document.getElementById("novote"),
+
+    /* Different screens. */
+    showWhiteBackground: document.getElementById("set-white"),
+    showBlackBackground: document.getElementById("set-black"),
+    showSummary: document.getElementById("show-summary"),
+    showNovote: document.getElementById("show-novote"),
+    showReturnRemotes: document.getElementById("show-return-remotes"),
+
+    /* Get */
+    getKeypadMin: () => parseInt(Control.$.keypadMin.value),
+    getKeypadMax: () => parseInt(Control.$.keypadMax.value),
+    getStartButtons: () => document.querySelectorAll("[data-id='button']"),
+    getPublishButtons: () => document.querySelectorAll("[data-id='publish']"),
+    getPercentageField: (id) => document.querySelector(`[data-id='percentage'][data-option-id='${id}']`),
+    getPercentageFields: () => document.querySelectorAll(`[data-id='percentage']`),
+    getResultField: (id) => document.querySelector(`[data-id='votes'][data-option-id='${id}']`),
+    getResultFields: () => document.querySelectorAll("[data-id='votes']"),
+    getQuestion: (id) => document.querySelector(`[data-question-id='${id}']`),
+    getOptions: (id) => Control.$.getQuestion(id).querySelectorAll("[data-option-id]"),
+
+    getQuestionData(id) {
+      const question = config.questions.find((q) => q.id === parseInt(id));
+
+      return {
+        ...question,
+        name: question.question,
+        options: Object.entries(question.options).map(([optionId, optionName]) => ({
+          optionId: parseInt(optionId),
+          optionName,
+        })),
+      };
+    },
+
+    setResults(options) {
+      for (const option of options) {
+        const input = Control.$.getResultField(option.optionId);
+        const percentage = Control.$.getPercentageField(option.optionId);
+        input.value = option.votes;
+        percentage.textContent = `${option.percentage}%`;
       }
-    })
-    .catch(() => {
-      startHardwareButton.disabled = true;
-      stopHardwareButton.disabled = true;
-      keypadMinField.disabled = false;
-      keypadMaxField.disabled = false;
-    })
-    .finally(() => {
-      window.setTimeout(pollHardware, intervalTimeout);
-    });
-};
+    },
 
-resultsElement.addEventListener("input", () => {
-  const formData = new FormData(resultsElement);
-  const values = Array.from(formData.values()).map(Number);
-  const canPublish = values.some(Boolean);
+    setTotal(votesMissing, votesTotal) {
+      const votesReceived = votesTotal - votesMissing;
+      const percentage = Math.round((votesReceived / votesTotal) * 100);
+      Control.$.votesTotal.textContent = `${votesReceived}/${votesTotal} (${percentage}%)`;
+    },
 
-  const total = values.reduce((r, n) => r + n, 0);
-  const dataset = values.map((value) => (value / total) * 100 || 0);
-  const percentages = roundPercentages(dataset);
+    setNoVote(votesMissing) {
+      Control.$.novote.textContent = votesMissing.join(", ");
+    },
 
-  for (const [index, percentage] of percentages.entries()) {
-    inputs[index].parentElement.childNodes[4].textContent = `${percentage}%`;
-  }
+    /* Toggles */
+    enableAllStartButtons: () => Control.$.getStartButtons().forEach(enable),
+    disableAllStartButtons: () => Control.$.getStartButtons().forEach(disable),
+    enableAllPublishButtons: () => Control.$.getPublishButtons().forEach(enable),
+    disableAllPublishButtons: () => Control.$.getPublishButtons().forEach(disable),
+    enableAllResultFields: () => Control.$.getResultFields().forEach(enable),
+    disableAllResultFields: () => Control.$.getResultFields().forEach(disable),
 
-  publishQuestionButton.disabled = !canPublish;
-});
+    disableResults() {
+      Control.$.cancelQuestion.disabled = true;
+      Control.$.stopQuestion.disabled = true;
+      Control.$.disableAllPublishButtons();
+      Control.$.disableAllResultFields();
+      Control.$.getResultFields().forEach((field) => (field.value = 0));
+      Control.$.getPercentageFields().forEach((field) => (field.textContent = ""));
+      Control.$.resultsLabel.textContent = "No question active";
+      Control.$.novote.textContent = "";
+      Control.$.votesTotal.textContent = "";
+    },
+  },
 
-// Fires the event to calculate percentages on first load.
-resultsElement.dispatchEvent(new Event("input"));
+  appEventHandlers: {
+    onInit(event) {
+      const state = event.detail.state;
 
-// On start hardware input.
-startHardwareButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app
-    .startHardware(parseInt(keypadMinField.value), parseInt(keypadMaxField.value))
-    .then(pollHardware)
-    .then(resetError)
-    .catch(showError);
-});
-
-// On stop hardware input.
-stopHardwareButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app.stopHardware().then(pollHardware).then(resetError).catch(showError);
-});
-
-// On stop question input.
-stopQuestionButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app
-    .stopQuestion()
-    .then(() => {
-      resetError();
-      window.clearTimeout(interval);
-    })
-    .catch((error) => {
-      event.target.disabled = false;
-      showError(error);
-    });
-});
-
-// On publish question input.
-publishQuestionButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  const formData = new FormData(resultsElement);
-
-  app
-    .publishQuestion(formData)
-    .then(() => {
-      resetError();
-      window.clearTimeout(interval);
-      resultsLabelElement.textContent = app.getActiveQuestionName();
-      resultsElement.querySelectorAll("input").forEach((input) => (input.value = "0"));
-      votesReceivedElement.textContent = "0";
-    })
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-      resultsElement.dispatchEvent(new Event("input"));
-    });
-});
-
-summarizeButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app
-    .publishSummary(language)
-    .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
-});
-
-novoteButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.target.disabled = true;
-
-  app
-    .publishVoterIds()
-    .then(resetError)
-    .catch(showError)
-    .finally(() => {
-      event.target.disabled = false;
-    });
-});
-
-returnRemotesButton.addEventListener("click", (event) => {
-  event.preventDefault();
-
-  const returnRemotes = getByLanguage(config.returnRemotes, language);
-
-  app.publishReturnRemotes(returnRemotes);
-});
-
-const publishButtons = document.querySelectorAll("[data-option-id]");
-for (const button of publishButtons) {
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.target.disabled = true;
-    window.clearTimeout(interval);
-
-    const optionId = parseInt(button.dataset.optionId);
-    const formData = new FormData(resultsElement);
-
-    app
-      .publishQuestion(formData, optionId)
-      .then(resetError)
-      .catch(showError)
-      .finally(() => {
-        event.target.disabled = false;
-      });
-  });
-}
-
-whiteButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  app.setBackgroundColor("white");
-});
-
-blackButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  app.setBackgroundColor("black");
-});
-
-exportButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  exportToCSV();
-});
-
-const questionsElement = document.getElementById("questions");
-const templateElement = document.querySelector("template").content;
-
-resultsLabelElement.textContent = app.getActiveQuestionName();
-
-const nodes = config.questions.map(
-  ({ id, question, options, activeOptions, isAnimated, showQuestion, showOnlyOptionId }) => {
-    const clone = document.importNode(templateElement, true);
-    const form = clone.querySelector("form");
-    const legend = clone.querySelector("legend");
-    const inputs = clone.querySelectorAll("input");
-    const button = clone.querySelector("button");
-
-    legend.textContent = `${id}: ${getByLanguage(question, language)}`;
-    for (const input of inputs) {
-      const optionId = input.dataset.optionId;
-      const option = options[optionId];
-
-      if (option) {
-        input.value = getByLanguage(option, language);
+      if (state.hardwareIsActive) {
+        const minKeypadId = 0;
+        const maxKeypadId = 5;
+        Control.appEventHandlers.onHardwareStart({ detail: { minKeypadId, maxKeypadId } });
       } else {
-        input.parentElement.style.display = "none";
+        Control.appEventHandlers.onHardwareStop();
       }
-    }
 
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
+      if (state.questionIsActive) {
+        Control.listeners.startCheckResults();
+        Control.$.stopQuestion.disabled = false;
+        Control.$.cancelQuestion.disabled = false;
+        Control.$.disableAllStartButtons();
+      }
+    },
+
+    onHardwareStart(event) {
+      Control.$.startHardware.disabled = true;
+      Control.$.stopHardware.disabled = false;
+      Control.$.keypadMin.disabled = true;
+      Control.$.keypadMin.value = event.detail.minKeypadId;
+      Control.$.keypadMax.disabled = true;
+      Control.$.keypadMax.value = event.detail.maxKeypadId;
+      Control.$.status.classList.add("active");
+      Control.$.status.classList.remove("inactive");
+      Control.$.enableAllStartButtons();
+    },
+
+    onHardwareStop() {
+      Control.$.startHardware.disabled = false;
+      Control.$.stopHardware.disabled = true;
+      Control.$.keypadMin.disabled = false;
+      Control.$.keypadMax.disabled = false;
+      Control.$.status.classList.add("inactive");
+      Control.$.status.classList.remove("active");
+      Control.$.disableAllStartButtons();
+    },
+
+    onStartQuestion(event) {
+      Control.$.cancelQuestion.disabled = false;
+      Control.listeners.startCheckResults();
+      Control.$.disableAllStartButtons();
+      Control.$.stopQuestion.disabled = false;
+      Control.$.resultsLabel.textContent = event.detail.name;
+    },
+
+    onPublishQuestion(event) {
+      Control.$.disableAllResultFields();
+
+      if (event.detail.isComplete) {
+        Control.$.disableResults();
+        Control.$.enableAllStartButtons();
+      }
+    },
+
+    onStopQuestion(event) {
+      Control.$.enableAllResultFields();
+      Control.$.enableAllPublishButtons(event.detail.id);
+      Control.$.setResults(event.detail.options);
+      Control.checkResultsValidity(event.detail.options, app.activeQuestion.id);
+      Control.$.setTotal(event.detail.missingKeypadIds.length, event.detail.keypadIds.length);
+      Control.$.setNoVote(event.detail.missingKeypadIds);
+    },
+  },
+
+  buttonEventHandlers: {
+    onHardwareStart(event) {
       event.target.disabled = true;
+      const keypadMin = Control.$.getKeypadMin();
+      const keypadMax = Control.$.getKeypadMax();
+      app.startHardware(keypadMin, keypadMax).catch(onEventError(event));
+    },
 
-      const formData = new FormData(form);
-      formData.append("question", getByLanguage(question, language));
-      formData.append("id", id);
-      formData.append("activeOptions", activeOptions);
-      formData.append("isAnimated", isAnimated);
-      formData.append("showQuestion", showQuestion);
-      formData.append("showOnlyOptionId", showOnlyOptionId);
+    onHardwareStop(event) {
+      event.target.disabled = true;
+      app.stopHardware().catch(onEventError(event));
+    },
+
+    onStopQuestion(event) {
+      event.target.disabled = true;
+      Control.listeners.stopCheckResults?.();
+      app.stopQuestion().catch(onEventError(event));
+    },
+
+    onPublishQuestion(event) {
+      event.target.disabled = true;
+      const optionId = parseInt(event.target.dataset.optionId);
+      app.publishQuestion(optionId).catch(onEventError(event));
+    },
+
+    onStartQuestion(event) {
+      event.target.disabled = true;
+      const id = event.target.dataset.questionId;
+      const data = Control.$.getQuestionData(id);
+      app.startQuestion(data).catch(onEventError(event));
+    },
+
+    onCancelQuestion(event) {
+      event.target.disabled = true;
+      app.cancelQuestion();
+      app.setBackgroundColor("white");
+      Control.$.stopQuestion.disabled = true;
+      Control.$.disableResults();
+      Control.listeners?.stopCheckResults();
+      Control.$.enableAllStartButtons();
+    },
+
+    onPublishSummary(event) {
+      disableTemporarily(event.target, 300);
+      app.publishSummary(language);
+    },
+
+    onPublishNovote(event) {
+      disableTemporarily(event.target, 300);
+      app.publishVoterIds();
+    },
+
+    onPublishReturnRemotes(event) {
+      disableTemporarily(event.target, 300);
+      app.publishReturnRemotes(config.returnRemotes);
+    },
+
+    onShowWhiteBackground(event) {
+      disableTemporarily(event.target, 300);
+      app.setBackgroundColor("white");
+    },
+
+    onShowBlackBackground(event) {
+      disableTemporarily(event.target, 300);
+      app.setBackgroundColor("black");
+    },
+
+    onExport(event) {
+      disableTemporarily(event.target, 300);
+      exportToCSV();
+    },
+  },
+
+  inputEventHandlers: {
+    onResultFieldChange: (event) => {
+      const optionId = parseInt(event.target.dataset.optionId);
+      const votes = parseInt(event.target.value);
+
+      const newResults = app.setResults(optionId, votes);
+      Control.$.setResults(newResults);
+      Control.checkResultsValidity(newResults, app.activeQuestion.id);
+    },
+  },
+
+  listeners: {
+    startCheckResults: () => {
+      let pointer;
+      const controller = new AbortController();
+      const signal = controller.signal;
 
       app
-        .startQuestion(formData)
-        .then(() => {
-          stopQuestionButton.disabled = false;
-          resultsLabelElement.textContent = app.getActiveQuestionName();
-
-          const refresh = () => {
-            app
-              .getResults()
-              .then(({ results, votesReceived, votersActive, novotes }) => {
-                votesReceivedElement.textContent = `${votesReceived}/${votersActive} (${Math.round((votesReceived / votersActive) * 100)}%)`;
-                votesMissingElement.textContent = novotes?.length ?? 0;
-                novotesElement.value = novotes.join(", ");
-
-                for (const { optionId, votes } of results) {
-                  const input = resultsElement.querySelector(`input[name="${optionId}"]`);
-                  input.value = votes;
-                  resultsElement.dispatchEvent(new Event("input"));
-                }
-              })
-              .finally(() => {
-                interval = window.setTimeout(refresh, intervalTimeout);
-              });
-          };
-
-          refresh();
+        .getResults(signal)
+        .then(({ options, missingKeypadIds, keypadIds }) => {
+          Control.$.setResults(options);
+          Control.$.setTotal(missingKeypadIds.length, keypadIds.length);
+          Control.$.setNoVote(missingKeypadIds);
         })
-        .catch(showError)
+        .catch((error) => {
+          if (typeof error === DOMException && error.name === "AbortError") {
+            // If it is the aborted promise don't do anything.
+            return;
+          }
+
+          throw error;
+        })
         .finally(() => {
-          event.target.disabled = false;
+          pointer = window.setTimeout(Control.listeners.startCheckResults, config.pollInterval);
         });
-    });
 
-    return clone;
-  }
-);
+      Control.listeners.stopCheckResults = () => {
+        controller.abort();
+        window.clearTimeout(pointer);
+      };
+    },
+  },
 
-questionsElement.replaceChildren(...nodes);
-pollHardware();
+  checkResultsValidity(options, id) {
+    const isPeopleQuestion = [5, 6, 14].includes(id);
+    const isEmpty = options.every((option) => option.votes === 0);
+    const isNotUnique = new Set(options.map((option) => option.percentage)).size !== options.length;
+    const angeloIsNotLast = id === 14 && options.some((option) => option.percentage < options.at(-1).percentage);
+    const leaveIsNotWinning = id === 18 && options[0].percentage < options[1].percentage;
+
+    if (isEmpty || isNotUnique || angeloIsNotLast || leaveIsNotWinning) {
+      Control.$.disableAllPublishButtons();
+    } else {
+      Control.$.enableAllPublishButtons();
+      Control.$.publishQuestion.disabled = isPeopleQuestion;
+    }
+  },
+
+  renderQuestion({ id, question, options }) {
+    const clone = document.importNode(Control.$.questionTemplate.content, true);
+    const div = clone.firstElementChild;
+
+    div.dataset.id = id;
+
+    const legend = clone.querySelector("legend");
+    const field = clone.querySelector("fieldset");
+    const startButton = clone.querySelector("button");
+
+    legend.textContent = `${id}: ${question}`;
+    startButton.dataset.questionId = id;
+    startButton.addEventListener("click", Control.buttonEventHandlers.onStartQuestion);
+
+    const createOption = (optionId, defaultValue) => {
+      const clone = document.importNode(Control.$.inputTemplate, true).content;
+      const label = clone.querySelector("[data-id='label']");
+      const input = clone.querySelector("[data-id='input']");
+
+      label.textContent = optionId;
+      input.value = defaultValue;
+      input.addEventListener("input", (event) => {
+        options[optionId] = event.target.value;
+      });
+
+      return clone;
+    };
+
+    for (const [optionId, defaultValue] of Object.entries(options)) {
+      const option = createOption(optionId, defaultValue);
+      field.insertBefore(option, startButton);
+    }
+
+    Control.$.questions.appendChild(clone);
+  },
+
+  render() {
+    for (const question of config.questions) {
+      Control.renderQuestion(question);
+    }
+  },
+
+  bindAppEvents() {
+    app.addEventListener(app.INIT, Control.appEventHandlers.onInit);
+    app.addEventListener(app.START_HARDWARE, Control.appEventHandlers.onHardwareStart);
+    app.addEventListener(app.STOP_HARDWARE, Control.appEventHandlers.onHardwareStop);
+    app.addEventListener(app.START_QUESTION, Control.appEventHandlers.onStartQuestion);
+    app.addEventListener(app.STOP_QUESTION, Control.appEventHandlers.onStopQuestion);
+    app.addEventListener(app.PUBLISH_QUESTION, Control.appEventHandlers.onPublishQuestion);
+  },
+
+  bindButtonEvents() {
+    Control.$.export.addEventListener("click", Control.buttonEventHandlers.onExport);
+    Control.$.startHardware.addEventListener("click", Control.buttonEventHandlers.onHardwareStart);
+    Control.$.stopHardware.addEventListener("click", Control.buttonEventHandlers.onHardwareStop);
+    Control.$.stopQuestion.addEventListener("click", Control.buttonEventHandlers.onStopQuestion);
+    Control.$.cancelQuestion.addEventListener("click", Control.buttonEventHandlers.onCancelQuestion);
+    Control.$.publishQuestion.addEventListener("click", Control.buttonEventHandlers.onPublishQuestion);
+    Control.$.showNovote.addEventListener("click", Control.buttonEventHandlers.onPublishNovote);
+    Control.$.showSummary.addEventListener("click", Control.buttonEventHandlers.onPublishSummary);
+    Control.$.showReturnRemotes.addEventListener("click", Control.buttonEventHandlers.onPublishReturnRemotes);
+    Control.$.showWhiteBackground.addEventListener("click", Control.buttonEventHandlers.onShowWhiteBackground);
+    Control.$.showBlackBackground.addEventListener("click", Control.buttonEventHandlers.onShowBlackBackground);
+
+    for (const button of Control.$.getPublishButtons()) {
+      button.addEventListener("click", Control.buttonEventHandlers.onPublishQuestion);
+    }
+  },
+
+  bindInputEvents() {
+    for (const field of Control.$.getResultFields()) {
+      field.addEventListener("input", Control.inputEventHandlers.onResultFieldChange);
+    }
+  },
+
+  translateConfig(language) {
+    const translate = (obj, property) => {
+      if (typeof obj[property] === "object") {
+        obj[property] = obj[property][language];
+      }
+    };
+
+    translate(config, "returnRemotes");
+
+    for (const question of config.questions) {
+      translate(question, "question");
+      for (const optionId of Object.keys(question.options)) {
+        translate(question.options, optionId);
+      }
+    }
+  },
+
+  init() {
+    Control.translateConfig(language);
+    Control.render();
+    Control.bindAppEvents();
+    Control.bindButtonEvents();
+    Control.bindInputEvents();
+  },
+};
+
+app.init();
+Control.init();

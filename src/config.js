@@ -21,10 +21,10 @@
  * @typedef {{ apiUrl: str, questions: Question[] }} Config
  * @type { Config }
  */
-export default Object.freeze({
+export default {
   "apiUrl": "http://localhost:3000",
   // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
-  "pollInterval": 2000,
+  "pollInterval": 1000,
   "returnRemotes": {
     "en": "Please hand in your voting device at the exit.\nThanks!",
     "nl": "Gelieve uw stembakje in te leveren bij het verlaten van de zaal.\nBedankt!",
@@ -40,9 +40,9 @@ export default Object.freeze({
       "id": 2,
       "question": { "en": "How do you identify?", "nl": "Hoe identificeer je jezelf?" },
       "options": {
-        1: "F",
-        2: "M",
-        3: "X",
+        1: { "en": "F", "nl": "V" },
+        2: { "en": "M", "nl": "M" },
+        3: { "en": "X", "nl": "X" },
       },
       "activeOptions": 3,
     },
@@ -138,7 +138,7 @@ export default Object.freeze({
         1: { "en": "Racist", "nl": "Racistisch" },
         2: { "en": "Sexist", "nl": "Seksistisch" },
         3: { "en": "Violent", "nl": "Geweldadig" },
-        4: { "en": "None", "nl": "Geen van beide" },
+        4: { "en": "None", "nl": "Geen van deze" },
       },
       "activeOptions": 4,
     },
@@ -219,4 +219,4 @@ export default Object.freeze({
       "activeOptions": 5,
     },
   ],
-});
+};
