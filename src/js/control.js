@@ -237,7 +237,7 @@ const Control = {
 
     onPublishReturnRemotes(event) {
       disableTemporarily(event.target, 300);
-      app.showReturnRemotes(config.showReturnRemotes);
+      app.publishReturnRemotes(config.returnRemotes);
     },
 
     onShowWhiteBackground(event) {
@@ -300,9 +300,9 @@ const Control = {
   },
 
   checkResultsValidity(options, id) {
-    const isPeopleQuestion = [5, 6, 14, 18].includes(id);
-    const isEmpty = isPeopleQuestion && options.every((option) => option.votes === 0);
-    const isNotUnique = isPeopleQuestion && new Set(options.map((option) => option.percentage)).size !== options.length;
+    const isPeopleQuestion = [5, 6, 14].includes(id);
+    const isEmpty = options.every((option) => option.votes === 0);
+    const isNotUnique = new Set(options.map((option) => option.percentage)).size !== options.length;
     const angeloIsNotLast = id === 14 && options.some((option) => option.percentage < options.at(-1).percentage);
     const leaveIsNotWinning = id === 18 && options[0].percentage < options[1].percentage;
 

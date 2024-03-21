@@ -40,9 +40,9 @@ export default {
       "id": 2,
       "question": { "en": "How do you identify?", "nl": "Hoe identificeer je jezelf?" },
       "options": {
-        1: "F",
-        2: "M",
-        3: "X",
+        1: { "en": "F", "nl": "V" },
+        2: { "en": "M", "nl": "M" },
+        3: { "en": "X", "nl": "X" },
       },
       "activeOptions": 3,
     },
