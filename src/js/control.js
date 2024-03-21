@@ -300,11 +300,11 @@ const Control = {
   },
 
   checkResultsValidity(options, id) {
-    const isPeopleQuestion = [5, 6, 14].includes(id);
+    const isPeopleQuestion = [5, 6, 14, 18].includes(id);
     const isEmpty = isPeopleQuestion && options.every((option) => option.votes === 0);
-    const isNotUnique = isPeopleQuestion && new Set(options.map((option) => option.votes)).size !== options.length;
-    const angeloIsNotLast = id === 14 && options.some((option) => option.votes < options.at(-1).votes);
-    const leaveIsNotWinning = id === 18 && options[0].votes < options[1].votes;
+    const isNotUnique = isPeopleQuestion && new Set(options.map((option) => option.percentage)).size !== options.length;
+    const angeloIsNotLast = id === 14 && options.some((option) => option.percentage < options.at(-1).percentage);
+    const leaveIsNotWinning = id === 18 && options[0].percentage < options[1].percentage;
 
     if (isEmpty || isNotUnique || angeloIsNotLast || leaveIsNotWinning) {
       Control.$.disableAllPublishButtons();

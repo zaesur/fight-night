@@ -25,8 +25,6 @@ const formatOptionLabel = (name) => {
       return name;
     }
   }
-
-  return match ? `${name.slice(0, match.index)}<br>${name.slice(match.index)}` : name.split(" ").join("<br>");
 };
 
 const Audience = {
