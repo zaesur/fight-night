@@ -87,7 +87,8 @@ main {
   background-color: red;
 }
 
-#novote {
+#novote,
+#summary {
   resize: none;
   width: 100%;
   height: 5rem;

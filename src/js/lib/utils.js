@@ -47,3 +47,5 @@ export const exportToCSV = () => {
   link.download = "Results.csv";
   link.click();
 };
+
+export const getLanguage = () => new URLSearchParams(window.location.search).get("language") ?? "en";
