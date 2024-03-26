@@ -1,9 +1,9 @@
 import config from "../config.js";
 import App from "./lib/app.js";
 import Client from "./lib/client.js";
-import { exportToCSV } from "./lib/utils.js";
+import { exportToCSV, getLanguage } from "./lib/utils.js";
 
-const language = new URLSearchParams(window.location.search).get("language") ?? "en";
+const language = getLanguage();
 const client = new Client(config.apiUrl);
 const app = new App(client, window.localStorage);
 
@@ -41,6 +41,7 @@ const Control = {
     cancelQuestion: document.getElementById("cancel-question"),
     export: document.getElementById("export"),
     novote: document.getElementById("novote"),
+    summary: document.getElementById("summary"),
 
     /* Different screens. */
     showWhiteBackground: document.getElementById("set-white"),
@@ -93,6 +94,14 @@ const Control = {
       Control.$.novote.textContent = votesMissing.join(", ");
     },
 
+    setSummary(summary) {
+      Control.$.summary.textContent = summary;
+    },
+
+    setPublishTitles(title) {
+      Control.$.getPublishButtons().forEach((button) => (button.title = title));
+    },
+
     /* Toggles */
     enableAllStartButtons: () => Control.$.getStartButtons().forEach(enable),
     disableAllStartButtons: () => Control.$.getStartButtons().forEach(disable),
@@ -109,7 +118,7 @@ const Control = {
       Control.$.getResultFields().forEach((field) => (field.value = 0));
       Control.$.getPercentageFields().forEach((field) => (field.textContent = ""));
       Control.$.resultsLabel.textContent = "No question active";
-      Control.$.novote.textContent = "";
+      // Control.$.novote.textContent = "";
       Control.$.votesTotal.textContent = "";
     },
   },
@@ -119,8 +128,8 @@ const Control = {
       const state = event.detail.state;
 
       if (state.hardwareIsActive) {
-        const minKeypadId = 0;
-        const maxKeypadId = 5;
+        const minKeypadId = state.keypadIds.at(0);
+        const maxKeypadId = state.keypadIds.at(-1);
         Control.appEventHandlers.onHardwareStart({ detail: { minKeypadId, maxKeypadId } });
       } else {
         Control.appEventHandlers.onHardwareStop();
@@ -179,7 +188,10 @@ const Control = {
       Control.$.setResults(event.detail.options);
       Control.checkResultsValidity(event.detail.options, app.activeQuestion.id);
       Control.$.setTotal(event.detail.missingKeypadIds.length, event.detail.keypadIds.length);
+
+      // For Q18.
       Control.$.setNoVote(event.detail.missingKeypadIds);
+      Control.$.setSummary(event.detail.summary);
     },
   },
 
@@ -227,7 +239,7 @@ const Control = {
 
     onPublishSummary(event) {
       disableTemporarily(event.target, 300);
-      app.publishSummary(language);
+      app.publishSummary();
     },
 
     onPublishNovote(event) {
@@ -308,7 +320,18 @@ const Control = {
 
     if (isEmpty || isNotUnique || angeloIsNotLast || leaveIsNotWinning) {
       Control.$.disableAllPublishButtons();
+
+      if (isEmpty) {
+        Control.$.setPublishTitles("All options have 0 votes.");
+      } else if (isNotUnique) {
+        Control.$.setPublishTitles("Some result percentages are not unique.");
+      } else if (angeloIsNotLast) {
+        Control.$.setPublishTitles("Angelo is not last.");
+      } else if (leaveIsNotWinning) {
+        Control.$.setPublishTitles("Leave is not winning.");
+      }
     } else {
+      Control.$.setPublishTitles("Publish");
       Control.$.enableAllPublishButtons();
       Control.$.publishQuestion.disabled = isPeopleQuestion;
     }

@@ -1,5 +1,6 @@
 import config from "../../config.js";
 import QuestionFactory from "./questionFactory.js";
+import { getLanguage } from "./utils.js";
 /**
  * @typedef {import("./client.js").Client} Client
  */
@@ -65,7 +66,7 @@ export default class App extends EventTarget {
    * @memberof App
    */
   #dispatchStartHardware = (minKeypadId, maxKeypadId) => {
-    if (!minKeypadId || !maxKeypadId) {
+    if (minKeypadId === undefined || maxKeypadId === undefined) {
       throw "Must provide min and max keypad Id!";
     }
 
@@ -107,14 +108,20 @@ export default class App extends EventTarget {
   /**
    * Dispatch stop question event.
    */
-  #dispatchStopQuestion = (id, options, missingKeypadIds, keypadIds) => {
+  #dispatchStopQuestion = (id, options, missingKeypadIds, keypadIds, summary) => {
     if (options === undefined) {
       throw "Must provide options!";
     }
 
     this.dispatchEvent(
       new CustomEvent(this.STOP_QUESTION, {
-        detail: { id, options, missingKeypadIds, keypadIds },
+        detail: {
+          id,
+          options,
+          missingKeypadIds,
+          keypadIds,
+          summary,
+        },
       })
     );
   };
@@ -213,7 +220,13 @@ export default class App extends EventTarget {
    */
   stopQuestion = async () => {
     await this.activeQuestion.close();
-    this.#dispatchStopQuestion(this.activeQuestion.id, this.activeQuestion.options, this.getNoVotes(), this.keypadIds);
+    this.#dispatchStopQuestion(
+      this.activeQuestion.id,
+      this.activeQuestion.options,
+      this.getNoVotes(),
+      this.keypadIds,
+      this.activeQuestion.id === 18 ? this.createSummary() : undefined
+    );
   };
 
   /**
@@ -229,7 +242,7 @@ export default class App extends EventTarget {
     this.#dispatchPublishQuestion(this.activeQuestion.optionsShown.length === this.activeQuestion.options.length);
   };
 
-  createSummary = (language) => {
+  createSummary = () => {
     const getMiddle = (str) => {
       const match = str.match(/(\d+)[-—](\d+)/);
       if (match) {
@@ -310,15 +323,15 @@ export default class App extends EventTarget {
       {
         "en": formatEnglish,
         "nl": formatDutch,
-      }[language] ?? formatEnglish
+      }[getLanguage()] ?? formatEnglish
     )({ q1: q1Majority, q2: q2Majority, q3: q3Majority, q4: q4Majority, q8: q8Majority, q10: q10Majority });
 
     return summary;
   };
 
-  publishSummary = (language) => {
+  publishSummary = () => {
     this.audienceState = "showSummary";
-    this.summary = this.createSummary(language);
+    this.summary = this.createSummary();
     this.#syncAudience();
   };
 

@@ -24,7 +24,7 @@
 export default {
   "apiUrl": "http://localhost:3000",
   // "apiUrl": "https://ontroerend-goed.eventsight.eu/api",
-  "pollInterval": 1000,
+  "pollInterval": 2000,
   "returnRemotes": {
     "en": "Please hand in your voting device at the exit.\nThanks!",
     "nl": "Gelieve uw stembakje in te leveren bij het verlaten van de zaal.\nBedankt!",
@@ -48,7 +48,7 @@ export default {
     },
     {
       "id": 3,
-      "question": { "en": "What is your age?", "nl": "Wat is je leeftijd?" },
+      "question": { "en": "What is your age? (HANDSIGN)", "nl": "Wat is je leeftijd? (HANDSIGN)" },
       "options": {
         1: "-18",
         2: "18—24",
@@ -104,7 +104,7 @@ export default {
         1: { "en": "Freedom", "nl": "Vrijheid" },
         2: { "en": "Charisma", "nl": "Charisma" },
         3: { "en": "Wisdom", "nl": "Wijsheid" },
-        4: { "en": "Honesty", "nl": "Eerlijkheid" },
+        4: { "en": "Honesty", "nl": "Trouw" },
         5: { "en": "Fun", "nl": "Fun" },
       },
       "activeOptions": 5,
@@ -145,8 +145,8 @@ export default {
     {
       "id": 11,
       "question": {
-        "en": "Do you trust the majority of the audience?",
-        "nl": "Vertrouw je de meerderheid van het publiek?",
+        "en": "Do you trust the majority of the audience? (HANDSIGN)",
+        "nl": "Vertrouw je de meerderheid van het publiek? (HANDSIGN)",
       },
       "options": { 1: { "en": "Yes", "nl": "Ja" }, 2: { "en": "No", "nl": "Nee" } },
       "activeOptions": 2,
