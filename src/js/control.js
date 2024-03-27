@@ -314,9 +314,13 @@ const Control = {
   checkResultsValidity(options, id) {
     const isPeopleQuestion = [5, 6, 14].includes(id);
     const isEmpty = options.every((option) => option.votes === 0);
-    const isNotUnique = new Set(options.map((option) => option.percentage)).size !== options.length;
     const angeloIsNotLast = id === 14 && options.some((option) => option.percentage < options.at(-1).percentage);
     const leaveIsNotWinning = id === 18 && options[0].percentage < options[1].percentage;
+
+    const allPercentages = options.map((option) => option.percentage);
+    const zeroPercentages = allPercentages.filter((p) => p === 0);
+    const nonZeroPercentages = allPercentages.filter((p) => p !== 0);
+    const isNotUnique = new Set(nonZeroPercentages).size + zeroPercentages.length !== options.length;
 
     if (isEmpty || isNotUnique || angeloIsNotLast || leaveIsNotWinning) {
       Control.$.disableAllPublishButtons();
