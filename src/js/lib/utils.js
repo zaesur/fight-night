@@ -1,4 +1,12 @@
 export const roundPercentages = (percentagesToRound) => {
+  percentagesToRound.forEach((perc, i) => {
+    if(perc > 0 && perc < 1) {
+      var toSub = 1 - perc;
+      var maxInd = percentagesToRound.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+      percentagesToRound[i] = 1;
+      percentagesToRound[maxInd] = percentagesToRound[maxInd] - toSub;
+    }         
+  });
   const cumulativeSum = (sum) => (n) => (sum += n);
   const cumSum = percentagesToRound.map(cumulativeSum(0));
   const cumSumRounded = cumSum.map(Math.round);
